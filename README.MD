@@ -1,6 +1,8 @@
 # kairos-smi
 multi-server gpu moniroting program
 
+![sample.png](img/sample.png)
+
 ```
 usage: kairos-smi.py [-h] [-l] [-c CONFIG]
 
