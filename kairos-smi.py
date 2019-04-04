@@ -7,10 +7,6 @@ import threading
 import argparse
 # from pprint import pprint
 
-with open('config.json', 'r') as f:
-    conf = json.load(f)
-
-HOSTS = conf['hosts']
 # querys
 QUERY_GPU = "nvidia-smi --query-gpu=timestamp,gpu_uuid,count,name,pstate,temperature.gpu,utilization.gpu,memory.used,memory.total --format=csv,noheader"
 QUERY_APP = "nvidia-smi --query-compute-apps=gpu_uuid,pid,process_name,used_memory --format=csv,noheader"
@@ -92,7 +88,15 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-l', '--loop', action='store_true', help='loop forever')
+    parser.add_argument('-c', '--config', default='config.json', help='set config file location')
     args = parser.parse_args()
+
+    config = args.config
+
+    with open(config, 'r') as f:
+        conf = json.load(f)
+
+    HOSTS = conf['hosts']
 
     while(True):
         result = get_gpus_status(HOSTS)
