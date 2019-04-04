@@ -1,6 +1,16 @@
 # kairos-smi
 multi-server gpu moniroting program
 
+```
+usage: kairos-smi.py [-h] [-l] [-c CONFIG]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -l, --loop            loop forever
+  -c CONFIG, --config CONFIG
+                        set config file location
+```
+
 # quick start
 ## 0. setup
 ### create rsa key
