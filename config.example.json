@@ -1,0 +1,6 @@
+{
+    "hosts": [
+        "<username>@<host>[:port]",
+        "kairos@123.123.123.123:22"
+    ]
+}
