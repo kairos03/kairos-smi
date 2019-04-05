@@ -84,7 +84,7 @@ if __name__ == '__main__':
     while(True):
         result = get_gpus_status(HOSTS)
         if args.loop:
-            os.system('clear')
+            print('\033[2J')
         # pprint(result['gpus'])
 
         for host in HOSTS:
