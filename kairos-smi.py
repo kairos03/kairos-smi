@@ -30,23 +30,6 @@ def ssh_remote_command(entrypoint, command):
     return {entrypoint: result == None and [] or result}
 
 
-def add_authkey(host, key_path):
-    with open(key_path, 'r') as f:
-        key = f.read()
-    
-    command = "echo {key} >> ~/.ssh/authorized_keys"
-
-    auth = ssh_remote_command(host, command)
-    return auth
-
-
-def excute_smi(host):
-
-    gpus = ssh_remote_command(host, QUERY_GPU)
-    apps = ssh_remote_command(host, QUERY_APP)
-        
-    return gpus, apps
-
 def get_gpus_status(hosts):
 
     que = []
