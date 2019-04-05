@@ -14,24 +14,8 @@ optional arguments:
 ```
 
 # quick start
-## 0. setup
-### create rsa key
-Create ssh public key. If you already has a key, you can skip this.
-```shell
-$ ssh-keygen
-$ cat ~/.ssh/id_rsa.pub
-```
 
-### copy the public key to gpu server
-Copy generated public key in your gpu server.
-
-In server
-```shell
-$ echo [your-ssh-public-key] >> ~/.ssh/authorized_keys
-$ cat ~/.ssh/authorized_keys
-```
-
-## 1. config
+## 1. Setup config file
 Edit `config.json`. Add your gpu server address in `config.json`.
 ```json
 {
@@ -42,8 +26,16 @@ Edit `config.json`. Add your gpu server address in `config.json`.
 }
 ```
 
-## 2. run
+## 2. Add rsa_id to server
+
+create new rea_id and add to your server
+
 ```shell
-$ python3 kairos-smi
+$ python3 auto-copy-id.py -c -n
+```
+
+## 3. Run It!
+```shell
+$ python3 kairos-smi.py
 ```
 
