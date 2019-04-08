@@ -5,7 +5,10 @@ import queue
 import json
 import threading
 import argparse
+import logging
 # from pprint import pprint
+
+logging.basicConfig(level=logging.ERROR)
 
 # querys
 QUERY_GPU = "nvidia-smi --query-gpu=timestamp,gpu_uuid,count,name,pstate,temperature.gpu,utilization.gpu,memory.used,memory.total --format=csv,noheader"
@@ -21,11 +24,14 @@ def ssh_remote_command(entrypoint, command):
                        stderr=subprocess.PIPE)
     result = ssh.stdout.readlines()
     if result == []:
-        error = ssh.stderr.readlines()
+        error = [ssh.stderr.readlines()]
+        logging.warn("ssh_remote_command: (entrypoint: {}, command: {}) {}".format(entrypoint, command, error))
         #print (sys.stderr, "ERROR: %s" % error)
+
     else:
         for i, res in enumerate(result):
             result[i] = res.decode('utf-8').strip().split(', ')
+    logging.debug("ssh_remote_command: (endpont: {}, command: {}) {}".format(entrypoint, command, result))
 
     return {entrypoint: result == None and [] or result}
 
@@ -50,8 +56,7 @@ def get_gpus_status(hosts):
         t.start()
 
     for t in threads:
-        # t.join(timeout=1)
-        t.join(2)    
+        t.join(timeout=2)
 
     for i, q in enumerate(que):
         if i == 0:
@@ -85,9 +90,15 @@ if __name__ == '__main__':
         result = get_gpus_status(HOSTS)
         if args.loop:
             print('\033[2J')
-        # pprint(result['gpus'])
+
+        logging.debug("result {}".format(result))
 
         for host in HOSTS:
+            # error
+            if not result['gpus'][host]:
+                print("[{}]\n| ERROR |".format(host))
+                continue
+
             print('[{}] \t Running GPUs [ {} / {} ]'.format(host ,len(result['apps'][host]), len(result['gpus'][host])))
             for i, gpu in enumerate(result['gpus'][host]):
                 print("| {} | Temp {:2s}C | Util {:5s} | Mem {:9s}/{:9s} |".format(i, gpu[5], gpu[6], gpu[7], gpu[8]))
