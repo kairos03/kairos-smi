@@ -6,7 +6,6 @@ import json
 import threading
 import argparse
 import logging
-# from pprint import pprint
 
 logging.basicConfig(level=logging.ERROR)
 
