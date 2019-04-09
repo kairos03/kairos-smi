@@ -72,8 +72,7 @@ def get_gpus_status(hosts):
     return result
 
 
-if __name__ == '__main__':
-
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-l', '--loop', action='store_true', help='loop forever')
     parser.add_argument('-c', '--config', default='config.json', help='set config file location')
@@ -81,8 +80,12 @@ if __name__ == '__main__':
 
     config = args.config
 
-    with open(config, 'r') as f:
-        conf = json.load(f)
+    try:
+        with open(config, 'r') as f:
+            conf = json.load(f)
+    except FileNotFoundError:
+        print("[ERROR] Config file '{}' not found.".format(config))
+        exit()
 
     HOSTS = conf['hosts']
 
@@ -107,4 +110,8 @@ if __name__ == '__main__':
         if not args.loop:
             break
 
+
+if __name__ == '__main__':
+
+    main()
 
