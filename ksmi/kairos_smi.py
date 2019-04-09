@@ -80,8 +80,12 @@ def main():
 
     config = args.config
 
-    with open(config, 'r') as f:
-        conf = json.load(f)
+    try:
+        with open(config, 'r') as f:
+            conf = json.load(f)
+    except FileNotFoundError:
+        print("[ERROR] Config file '{}' not found.".format(config))
+        exit()
 
     HOSTS = conf['hosts']
 
