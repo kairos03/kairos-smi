@@ -1,5 +1,5 @@
 # kairos-smi
-multi-server gpu moniroting program
+Multi-server gpu moniroting program
 
 ![sample.png](img/sample.png)
 
@@ -14,8 +14,15 @@ optional arguments:
 ```
 
 # quick start
+## 1. install 
+Install with pip
+```shell
+$ pip install ksmi
+or
+$ pip3 install ksmi
+```
 
-## 1. Setup config file
+## 2. Setup config file
 Edit `config.json`. Add your gpu server address in `config.json`.
 ```json
 {
@@ -26,16 +33,16 @@ Edit `config.json`. Add your gpu server address in `config.json`.
 }
 ```
 
-## 2. Add rsa_id to server
+## 3. Add rsa_id to server
 
 create new rea_id and add to your server
 
 ```shell
-$ python3 auto-copy-id.py -c -n
+$ python3 -m ksmi.auto-copy-id -c ./config.json -n
 ```
 
-## 3. Run It!
+## 4. Run It!
 ```shell
-$ python3 kairos-smi.py
+$ python3 -m ksmi.kairos-smi -l
 ```
 
