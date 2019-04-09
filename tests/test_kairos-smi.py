@@ -1,8 +1,8 @@
 import unittest
 
-import ksmi.kairos-smi
+import ksmi
 
 class test_kairos_smi(unittest.TestCase):
     def test_kairos_smi(self):
-        
+        ksmi
         pass
