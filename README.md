@@ -38,11 +38,11 @@ Edit `config.json`. Add your gpu server address in `config.json`.
 create new rea_id and add to your server
 
 ```shell
-$ python3 -m ksmi.auto-copy-id -c ./config.json -n
+$ python3 -m ksmi.auto-copy-id -c config.json -n
 ```
 
 ## 4. Run It!
 ```shell
-$ python3 -m ksmi.kairos-smi -l
+$ python3 -m ksmi -c config.json -l
 ```
 
