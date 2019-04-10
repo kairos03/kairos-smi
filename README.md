@@ -1,5 +1,9 @@
 # kairos-smi
-Multi-server gpu moniroting program
+Multi-server gpu moniroting program  
+
+[![PyPI version](https://badge.fury.io/py/ksmi.svg)](https://badge.fury.io/py/ksmi)
+
+See change Log: [change log](change_logs/v0.1.3.1.md)
 
 ![sample.png](img/sample.png)
 
@@ -55,6 +59,17 @@ optional arguments:
   -l, --loop            loop forever
   -c CONFIG, --config CONFIG
                         set config file location
+```
+
+### Simple usage
+Run once
+```
+$ python3 -m ksmi -c config.json
+```
+
+Run forever
+```
+$ python3 -m ksmi -c config.json -l
 ```
 
 # utils
