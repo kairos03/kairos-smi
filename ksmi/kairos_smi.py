@@ -97,7 +97,7 @@ def main():
 
         for host in HOSTS:
             # error
-            if not result['gpus'][host]:
+            if not result['gpus'].get(host):
                 print("[{}]\n| ERROR |".format(host))
                 continue
 
