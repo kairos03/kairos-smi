@@ -4,7 +4,7 @@ Multi-server gpu moniroting program
 ![sample.png](img/sample.png)
 
 ```
-usage: kairos-smi.py [-h] [-l] [-c CONFIG]
+usage: ksmi [-h] [-l] [-c CONFIG]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -46,3 +46,50 @@ $ python3 -m ksmi.auto-copy-id -c config.json -n
 $ python3 -m ksmi -c config.json -l
 ```
 
+# kairos-smi
+```
+usage: kairos_smi.py [-h] [-l] [-c CONFIG]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -l, --loop            loop forever
+  -c CONFIG, --config CONFIG
+                        set config file location
+```
+
+# utils
+## copy_id
+```
+usage: copy_id.py [-h] [-n] [-c CONFIG] [-s SERVER]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -n, --new_id          generate new id_rsa key
+  -c CONFIG, --config CONFIG
+                        set config file to use host list
+  -s SERVER, --server SERVER
+                        set a server to copy id
+```
+
+## copy id(rsa) to server
+
+### Use with `config.json`
+```
+$ python3 -m ksmi.copy_id -c config.json
+or
+$ python3 -m ksmi.copy_id --config config.json
+```
+
+### Use with individual Server address
+```
+$ python3 -m ksmi.copy_id -s [username@]<IP>[:port]
+or
+$ python3 -m ksmi.copy_id --server [username@]<IP>[:port]
+```
+
+### Make a new id_rsa 
+```
+$ python3 -m ksmi.copy_id -n
+or
+$ python3 -m ksmi.copy_id --new_id
+```
