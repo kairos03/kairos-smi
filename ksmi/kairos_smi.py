@@ -34,6 +34,14 @@ def ssh_remote_command(entrypoint, command):
 
     return {entrypoint: result == None and [] or result}
 
+def make_threads(hosts, queries):
+    
+    threads = []
+
+    for host in hosts:
+        for query in queries:
+            #### TODO ####
+            pass
 
 def get_gpus_status(hosts):
 
@@ -55,7 +63,7 @@ def get_gpus_status(hosts):
         t.start()
 
     for t in threads:
-        t.join(timeout=2)
+        t.join(timeout=10)
 
     for i, q in enumerate(que):
         if i == 0:
@@ -100,9 +108,12 @@ def main():
             if not result['gpus'].get(host):
                 print("[{}]\n| ERROR |".format(host))
                 continue
+            
+            gpus = len(result['gpus'].get(host))
+            apps = len(result['apps'].get(host)) if result['apps'].get(host) else 0
 
-            print('[{}] \t Running GPUs [ {} / {} ]'.format(host ,len(result['apps'][host]), len(result['gpus'][host])))
-            for i, gpu in enumerate(result['gpus'][host]):
+            print('[{}] \t Running GPUs [ {} / {} ]'.format(host ,apps, gpus))
+            for i, gpu in enumerate(result['gpus'].get(host)):
                 print("| {} | Temp {:2s}C | Util {:5s} | Mem {:9s}/{:9s} |".format(i, gpu[5], gpu[6], gpu[7], gpu[8]))
             print()
         
