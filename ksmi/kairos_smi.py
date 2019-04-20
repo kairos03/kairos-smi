@@ -112,7 +112,8 @@ def main():
             gpus = len(result['gpus'].get(host))
             apps = len(result['apps'].get(host)) if result['apps'].get(host) else 0
 
-            print('[{}] \t Running GPUs [ {} / {} ]'.format(host ,apps, gpus))
+            print('[{:.30}]\t\t{}'.format(host, "Running [{:2}/{:2}]".format(apps, gpus)), end='\n')
+            # print("{:>27}".format())
             for i, gpu in enumerate(result['gpus'].get(host)):
                 print("| {} | Temp {:2s}C | Util {:5s} | Mem {:9s}/{:9s} |".format(i, gpu[5], gpu[6], gpu[7], gpu[8]))
             print()
