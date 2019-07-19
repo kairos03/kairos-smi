@@ -53,7 +53,6 @@ def get_gpus_status(hosts):
         que.append(queue.Queue(maxsize=30))
 
     for host in hosts:
-        # host_status = {"host":host}
 
         for i, query in enumerate([QUERY_GPU, QUERY_APP]):
             t = threading.Thread(target=lambda q, arg1, arg2: q.put(ssh_remote_command(arg1, arg2)), args=(que[i], host, query))
@@ -63,7 +62,7 @@ def get_gpus_status(hosts):
         t.start()
 
     for t in threads:
-        t.join(timeout=10)
+        t.join(timeout=2)
 
     for i, q in enumerate(que):
         if i == 0:
@@ -107,6 +106,7 @@ def main():
             # error
             if not result['gpus'].get(host):
                 print("[{}]\n| ERROR |".format(host))
+                print()
                 continue
             
             gpus = len(result['gpus'].get(host))
