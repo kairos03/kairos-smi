@@ -6,7 +6,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-n', '--new_id', action='store_true', help='generate new id_rsa key')
-parser.add_argument('-c', '--config', default='config.json', help='set config file to use host list')
+parser.add_argument('-c', '--config', default=None, help='set config file to use host list')
 parser.add_argument('-s', '--server', default=None, help='set a server to copy id')
 args = parser.parse_args()
 
