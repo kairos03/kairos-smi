@@ -3,6 +3,7 @@ import subprocess
 import sys
 import queue
 import json
+from itertools import chain
 from multiprocessing import Process, Queue
 import threading
 import argparse
@@ -36,18 +37,16 @@ def ssh_remote_command(entrypoint, command):
 
 def get_gpus_status_v2(hosts):
 
-    result = []
+    result = {}
     que = Queue(maxsize=100)
     procs = []
 
     def run_command_and_inque(q, host, query):
         result = ssh_remote_command(host, query)
-        # print(result)
         q.put(result)
 
     for host in hosts:
         for query in [QUERY_GPU, QUERY_APP]:
-            print(host, query)
             proc = Process(target=run_command_and_inque, args=(que, host, query))
             proc.start()
             procs.append(proc)
@@ -59,7 +58,13 @@ def get_gpus_status_v2(hosts):
 
     while not que.empty():
         item = que.get()
-        result.append(item)
+        entry = item.get('entry')
+        item_type = 'apps' if item.get('command') == QUERY_APP else 'gpus'
+        
+        if entry not in result.keys():
+            result[entry] = {}
+        
+        result[entry].update({item_type: item.get('result')})
 
     que.close()
 
@@ -99,9 +104,19 @@ def get_gpus_status(hosts):
 
     return result
 
-def display_gpu_status(data):
+def display_gpu_status(hosts, data):
     """Display gpu status
     """
+    for host in hosts:
+        try:
+            gpu_stat = data[host].get('gpus')
+            app_stat = data[host].get('apps')
+
+
+        except KeyError:
+            print('[{:.30}]\n| ERROR |'.format(host), end='\n')
+
+        print('[{:.30}]\t\t{}'.format(host, "Running [{:2}/{:2}]".format(apps, gpus)), end='\n')
 
 def main():
     parser = argparse.ArgumentParser()
@@ -119,6 +134,7 @@ def main():
         exit()
 
     HOSTS = conf['hosts']
+    # TODO
 
     while(True):
         result = get_gpus_status(HOSTS)
