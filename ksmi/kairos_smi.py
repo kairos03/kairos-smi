@@ -3,6 +3,7 @@ import subprocess
 import sys
 import queue
 import json
+from multiprocessing import Process, Queue
 import threading
 import argparse
 import logging
@@ -25,23 +26,44 @@ def ssh_remote_command(entrypoint, command):
     if result == []:
         error = [ssh.stderr.readlines()]
         logging.warn("ssh_remote_command: (entrypoint: {}, command: {}) {}".format(entrypoint, command, error))
-        #print (sys.stderr, "ERROR: %s" % error)
 
     else:
         for i, res in enumerate(result):
             result[i] = res.decode('utf-8').strip().split(', ')
     logging.debug("ssh_remote_command: (endpont: {}, command: {}) {}".format(entrypoint, command, result))
 
-    return {entrypoint: result == None and [] or result}
+    return { 'entry': entrypoint, 'command': command, 'result': result == None and [] or result}
 
-def make_threads(hosts, queries):
-    
-    threads = []
+def get_gpus_status_v2(hosts):
+
+    result = []
+    que = Queue(maxsize=100)
+    procs = []
+
+    def run_command_and_inque(q, host, query):
+        result = ssh_remote_command(host, query)
+        # print(result)
+        q.put(result)
 
     for host in hosts:
-        for query in queries:
-            #### TODO ####
-            pass
+        for query in [QUERY_GPU, QUERY_APP]:
+            print(host, query)
+            proc = Process(target=run_command_and_inque, args=(que, host, query))
+            proc.start()
+            procs.append(proc)
+    
+    #que.join_thread()
+
+    for proc in procs:
+        proc.join()
+
+    while not que.empty():
+        item = que.get()
+        result.append(item)
+
+    que.close()
+
+    return result
 
 def get_gpus_status(hosts):
 
@@ -77,6 +99,9 @@ def get_gpus_status(hosts):
 
     return result
 
+def display_gpu_status(data):
+    """Display gpu status
+    """
 
 def main():
     parser = argparse.ArgumentParser()
