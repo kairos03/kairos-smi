@@ -31,14 +31,11 @@ if hosts == []:
 
 
 for host in hosts:
-    sp_host = host.split(':')
-    ep = sp_host[0]
-    if len(sp_host) == 1:
-        port = 22
-    elif len(sp_host) == 2:
-        port = sp_host[1]
-    else:
-        raise Exception('Config error. Invalid host. {}'.format(host)) 
+    try:
+        sp_host = host.split(':')
+        ep, port = sp_host
+    except KeyError:
+        ep, port = host, 22
 
     os.system('ssh-copy-id {} -p {}'.format(ep, port))
 
