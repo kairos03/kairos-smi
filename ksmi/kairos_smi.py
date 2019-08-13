@@ -110,10 +110,10 @@ def main(args):
     HOSTS = conf['hosts']
 
     while(True):
-        if args.loop:
-            print('\033[2J')
-
         result = get_gpus_status_v2(HOSTS)
+
+        if args.loop:
+            os.system('cls' if os.name == 'nt' else "printf '\033c'")
 
         logging.debug("result {}".format(result))
         display_gpu_status(HOSTS, result)
