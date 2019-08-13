@@ -1,5 +1,5 @@
 # kairos-smi
-Multi-server gpu moniroting program  
+Multi-server gpu monitoring program  
 
 [![PyPI version](https://badge.fury.io/py/ksmi.svg)](https://badge.fury.io/py/ksmi)
 
