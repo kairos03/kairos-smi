@@ -98,7 +98,8 @@ def get_args():
     args = parser.parse_args()
     return args
 
-def main(args):
+def main():
+    args = get_args()
     
     try:
         with open(args.config, 'r') as f:
@@ -119,10 +120,9 @@ def main(args):
         display_gpu_status(HOSTS, result)
         
         if not args.loop:
+            
             break
 
 
 if __name__ == '__main__':
-    args = get_args()
-    main(args)
-
+    main()
