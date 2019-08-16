@@ -9,4 +9,9 @@ install:
   - pip install -r requirements.txt
 # command to run tests
 script:
+  # add rsa
+  - export user=`whoami`
+  - ssh-keygen -t rsa -b 4096 -C 'build@travis-ci.org' -f $HOME/.ssh/id_rsa -N ''
+  - ssh-copy-id -i $HOME/.ssh/id_rsa.pub user@localhost 
+
   - python3 -m unittest discover -p "test_*.py" test

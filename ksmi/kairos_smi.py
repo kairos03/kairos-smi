@@ -28,14 +28,17 @@ def ssh_remote_command(entrypoint, command, timeout=1):
                        stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
     try:
-        out, _ = ssh.communicate(timeout=timeout)    
+        out, err = ssh.communicate(timeout=timeout)
+        print(out, err)
+        if err is not None:
+            return {'status': 'Error', 'entry': entrypoint, 'command': command, 'data': postprocessing(err)}
         return {'status': 'Success', 'entry': entrypoint, 'command': command, 'data': postprocessing(out)}
 
     except subprocess.TimeoutExpired:
         ssh.kill()
         _, err = ssh.communicate()
         return {'status': 'Timeout', 'entry': entrypoint, 'command': command, 'data': postprocessing(err)}
-    
+
 
 def get_gpus_status_v2(hosts):
 

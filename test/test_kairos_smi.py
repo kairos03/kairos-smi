@@ -7,24 +7,6 @@ class test_kairos_smi(unittest.TestCase):
     def setUp(self):
         self.hosts = ["mlvcgpu@211.254.217.54:16022"]
 
-    def test_ssh_remote_command(self):
-        # success case
-        result = ssh_remote_command('localhost', 'echo hello; echo hi')
-        self.assertEqual(result,
-            {
-                'status': 'Success',
-                'entry': 'localhost', 
-                'command': 'echo hello; echo hi', 
-                'data': [['hello'], ['hi']]
-            })
-        # success case
-        result = ssh_remote_command('localhost', QUERY_GPU)
-        self.assertEqual(result['status'], 'Success')
-        
-        # fail case
-        result = ssh_remote_command('test@1.1.1.1:2222', 'echo hello')
-        self.assertEqual(result['status'], 'Timeout')
-
     def test_get_gpu_status_v2(self):
         # success case
         hosts = ["mlvcgpu@211.254.217.54:16022"]
