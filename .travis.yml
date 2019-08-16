@@ -8,7 +8,8 @@ python:
 
 before_install:
   # add rsa
-  - sudo apt-get install sshpass
+  - sudo apt-get install sshpass -y
+  - sshpass -V
   - export user=`whoami`
   - echo -e 'testbuild\ntestbuild' | sudo passwd
   - ssh-keygen -t rsa -b 4096 -C 'build@travis-ci.org' -f $HOME/.ssh/id_rsa -N ''
