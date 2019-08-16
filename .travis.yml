@@ -2,16 +2,17 @@ dist: trusty
 language: python
 python:
   - "3.5"
-  - "3.5-dev"  # 3.5 development branch
-  - "3.6"
-  - "3.6-dev"  # 3.6 development branch
+#  - "3.5-dev"  # 3.5 development branch
+#  - "3.6"
+#  - "3.6-dev"  # 3.6 development branch
 
 before_install:
   # add rsa
+  - sudo apt-get install sshpass
   - export user=`whoami`
   - echo -e 'testbuild\ntestbuild' | sudo passwd
   - ssh-keygen -t rsa -b 4096 -C 'build@travis-ci.org' -f $HOME/.ssh/id_rsa -N ''
-  - echo -e 'testbuild' | ssh-copy-id -i $HOME/.ssh/id_rsa.pub -o StrictHostKeyChecking=no user@localhost 
+  - sshpass 'testbuild' ssh-copy-id -i $HOME/.ssh/id_rsa.pub -o StrictHostKeyChecking=no user@localhost 
 
 # command to install dependencies
 install:
