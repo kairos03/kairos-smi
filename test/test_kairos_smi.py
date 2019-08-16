@@ -45,7 +45,7 @@ class test_kairos_smi(unittest.TestCase):
         # fail case
         hosts = ["mlvcgpu@testtest:16022"]
         results = get_gpus_status_v2(hosts)
-        print(results)
+        #print(results)
         self.assertEqual(type(results), type({}))
         self.assertEqual(len(results), 1)
         self.assertTrue(hosts[0] in results.keys())
@@ -62,6 +62,5 @@ class test_kairos_smi(unittest.TestCase):
         result = get_gpus_status_v2(self.hosts)
         display_gpu_status(self.hosts, result)
 
-    def test_main(self):
-        args = get_args()
-        main(args)
+    #def test_main(self):
+    #    main()
