@@ -13,7 +13,7 @@ QUERY_GPU = "nvidia-smi --query-gpu=timestamp,gpu_uuid,count,name,pstate,tempera
 QUERY_APP = "nvidia-smi --query-compute-apps=gpu_uuid,pid,process_name,used_memory --format=csv,noheader"
 
 
-def ssh_remote_command(entrypoint, command):
+def ssh_remote_command(entrypoint, command, timeout=1):
 
     def postprocessing(data):
         return [x.split(', ') for x in data.decode('utf-8').split('\n')[:-1]]
@@ -28,7 +28,7 @@ def ssh_remote_command(entrypoint, command):
                        stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
     try:
-        out, _ = ssh.communicate(timeout=1)    
+        out, _ = ssh.communicate(timeout=timeout)    
         return {'status': 'Success', 'entry': entrypoint, 'command': command, 'data': postprocessing(out)}
 
     except subprocess.TimeoutExpired:
@@ -44,7 +44,7 @@ def get_gpus_status_v2(hosts):
     procs = []
 
     def run_command_and_inque(q, host, query):
-        result = ssh_remote_command(host, query)
+        result = ssh_remote_command(host, query, timeout=2)
         q.put(result)
 
     for host in hosts:

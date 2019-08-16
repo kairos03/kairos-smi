@@ -9,16 +9,16 @@ class test_kairos_smi(unittest.TestCase):
 
     def test_ssh_remote_command(self):
         # success case
-        result = ssh_remote_command('mlvcgpu@211.254.217.54:16022', 'echo hello; echo hi')
+        result = ssh_remote_command('localhost', 'echo hello; echo hi')
         self.assertEqual(result,
             {
                 'status': 'Success',
-                'entry': 'mlvcgpu@211.254.217.54:16022', 
+                'entry': 'localhost', 
                 'command': 'echo hello; echo hi', 
                 'data': [['hello'], ['hi']]
             })
         # success case
-        result = ssh_remote_command('mlvcgpu@211.254.217.54:16022', QUERY_GPU)
+        result = ssh_remote_command('localhost', QUERY_GPU)
         self.assertEqual(result['status'], 'Success')
         
         # fail case
