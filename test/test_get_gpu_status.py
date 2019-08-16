@@ -1,16 +1,16 @@
 import unittest
 
-from ksmi.kairos_smi import *
+from ksmi.kairos_smi import get_gpus_status
 
-class test_kairos_smi(unittest.TestCase):
+class test_get_gpu_status(unittest.TestCase):
     
     def setUp(self):
         self.hosts = ["mlvcgpu@211.254.217.54:16022"]
 
-    def test_get_gpu_status_v2(self):
+    def test_get_gpu_status(self):
         # success case
         hosts = ["mlvcgpu@211.254.217.54:16022"]
-        results = get_gpus_status_v2(hosts)
+        results = get_gpus_status(hosts)
         #print(results)
         self.assertEqual(type(results), type({}))
         self.assertEqual(len(results), 1)
@@ -26,7 +26,7 @@ class test_kairos_smi(unittest.TestCase):
 
         # fail case
         hosts = ["mlvcgpu@testtest:16022"]
-        results = get_gpus_status_v2(hosts)
+        results = get_gpus_status(hosts)
         #print(results)
         self.assertEqual(type(results), type({}))
         self.assertEqual(len(results), 1)
@@ -40,9 +40,9 @@ class test_kairos_smi(unittest.TestCase):
             self.assertTrue(len(results[entry]['apps']) == 0)
             #print(results[entry]['apps'])
 
-    def test_display_gpu_status(self):
-        result = get_gpus_status_v2(self.hosts)
-        display_gpu_status(self.hosts, result)
+    # def test_display_gpu_status(self):
+    #     result = get_gpus_status(self.hosts)
+    #     display_gpu_status(self.hosts, result)
 
     #def test_main(self):
     #    main()

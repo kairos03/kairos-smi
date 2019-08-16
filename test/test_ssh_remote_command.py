@@ -1,6 +1,6 @@
 import unittest
 
-from ksmi.kairos_smi import *
+from ksmi.kairos_smi import ssh_remote_command, QUERY_APP, QUERY_GPU
 
 class test_ssh_remote_command(unittest.TestCase):
     
