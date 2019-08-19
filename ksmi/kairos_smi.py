@@ -180,8 +180,13 @@ def display_gpu_status(hosts, data, app_data):
             # for fast search 
             if True:
                 if gpu[1] in app_data[host].keys():
-                    for app in app_data[host][gpu[1]]:
-                        print("\t|-- process PID {:s} | Username {:s} | used_memory {:s} ".format(app[0], app[1], app[2]))
+                    for i, app in enumerate(app_data[host][gpu[1]]):
+                        if i == len(app_data[host][gpu[1]]) - 1:
+                            print("\t└── process PID {:s} | Username {:s} | used_memory {:s} ".format(app[0], app[1], app[2]))
+                        else:
+                            print("\t├── process PID {:s} | Username {:s} | used_memory {:s} ".format(app[0], app[1], app[2]))
+                    
+                        
             
 def get_args():
     parser = argparse.ArgumentParser()
