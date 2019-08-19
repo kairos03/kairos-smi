@@ -174,11 +174,10 @@ def display_gpu_status(hosts, data, app_data):
         # print apps
         for i, gpu in enumerate(gpu_stat):
             print("| {} | Temp {:2s}C | Util {:>5s} | Mem {:>6s} / {:9s} |".format(i, gpu[5], gpu[6], gpu[7][:-4], gpu[8]))
-            nvidia_app_infos = []
-            ps_infos = Queue(maxsize=100)
-            
             # for fast search 
-            if True:
+            if app_data:
+                nvidia_app_infos = []
+                ps_infos = Queue(maxsize=100)
                 if gpu[1] in app_data[host].keys():
                     for i, app in enumerate(app_data[host][gpu[1]]):
                         if i == len(app_data[host][gpu[1]]) - 1:
@@ -192,6 +191,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-l', '--loop', action='store_true', help='loop forever')
     parser.add_argument('-c', '--config', default='config.json', help='set config file location')
+    parser.add_argument('-p', '--process', action='store_true', help='watch process details (PID, owner, memory, etc)')
     args = parser.parse_args()
     return args
 
@@ -212,8 +212,11 @@ def main():
     while(True):
         result = get_gpus_status_v2(HOSTS)
 
-        if num_it % APP_DETAIL_QUERY_INTERVAL == 0:
-            app_result = get_apps_status(HOSTS, result)
+        if args.process:
+            if num_it % APP_DETAIL_QUERY_INTERVAL == 0:
+                app_result = get_apps_status(HOSTS, result)
+        else:
+            app_result = None
 
         if args.loop:
             os.system('cls' if os.name == 'nt' else "printf '\033c'")
