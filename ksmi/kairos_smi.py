@@ -131,24 +131,6 @@ def get_apps_status(hosts, data):
                 app_stat = [app for idx, app in enumerate(app_stat) if idx not in used_indices]
             # print processes
     return apps_status_result
-    
-
-def get_groupped_app(gpu_stat, app_stat):
-
-    result = []
-    cache = {}
-
-    for i, gpu in enumerate(gpu_stat):
-        gpu_uuid = gpu_stat[0]
-        for i, app in enumerate(app_stat):
-            if gpu_uuid == app_stat[0]:
-                if app_stat[1] in cache:
-                    cache[app_stat[1]] += 1
-                
-                cache[app_stat] 
-
-                
-
 
 def display_gpu_status(hosts, data, app_data):
     """Display gpu status
