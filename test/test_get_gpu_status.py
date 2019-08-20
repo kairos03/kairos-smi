@@ -5,16 +5,16 @@ from ksmi.kairos_smi import get_gpus_status
 class test_get_gpu_status(unittest.TestCase):
     
     def setUp(self):
-        self.hosts = ["mlvcgpu@211.254.217.54:16022"]
+        self.hosts = ["mlvc07@163.180.186.49:2222"]
+        self.wrong_hosts = ["test@123.123.123.123:2211"]
 
     def test_get_gpu_status(self):
         # success case
-        hosts = ["mlvcgpu@211.254.217.54:16022"]
-        results = get_gpus_status(hosts)
+        results = get_gpus_status(self.hosts)
         #print(results)
         self.assertEqual(type(results), type({}))
         self.assertEqual(len(results), 1)
-        self.assertTrue(hosts[0] in results.keys())
+        self.assertTrue(self.hosts[0] in results.keys())
         for entry in results.keys():
             self.assertEqual(type(results[entry]), type({}))
             self.assertEqual(len(results[entry]), 2)
@@ -33,7 +33,7 @@ class test_get_gpu_status(unittest.TestCase):
         self.assertTrue(hosts[0] in results.keys())
         for entry in results.keys():
             self.assertEqual(type(results[entry]), type({}))
-            self.assertEqual(len(results[entry]), 2)
+            self.assertEqual(len(results[entry]), 7)
             self.assertTrue('gpus' in results[entry].keys())
             self.assertTrue('apps' in results[entry].keys())
             self.assertTrue(len(results[entry]['gpus']) == 0)
