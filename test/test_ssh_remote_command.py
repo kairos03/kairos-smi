@@ -5,28 +5,29 @@ from ksmi.kairos_smi import ssh_remote_command, QUERY_APP, QUERY_GPU
 class test_ssh_remote_command(unittest.TestCase):
     
     def setUp(self):
-        pass
+        self.host = "mlvc07@163.180.186.49:2222"
+        self.wrong_host = "test@123.123.123.123:2211"
 
     def tearDown(self):
         pass
 
-    def test_local_echo_success(self):
+    def test_echo_success(self):
         # success case
-        result = ssh_remote_command('localhost', 'echo hello; echo hi')
+        result = ssh_remote_command(self.host, 'echo hello; echo hi')
         self.assertEqual(result,
             {
                 'status': 'Success',
-                'entry': 'localhost', 
+                'entry': self.host, 
                 'command': 'echo hello; echo hi', 
                 'data': [['hello'], ['hi']]
             })
 
     def test_local_query_success(self):
         # success case
-        result = ssh_remote_command('localhost', QUERY_GPU)
+        result = ssh_remote_command(self.host, QUERY_GPU)
         self.assertEqual(result['status'], 'Success')
         
     def test_ssh_remote_command_fail(self):
         # fail case
-        result = ssh_remote_command('test@1.1.1.1:2222', 'echo hello')
+        result = ssh_remote_command(self.wrong_host, 'echo hello')
         self.assertEqual(result['status'], 'Timeout')

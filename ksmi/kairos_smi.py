@@ -74,8 +74,6 @@ def get_gpus_status(hosts):
             data = item.get('data')
 
         result[entry].update({item_type: data})
-        print(item)
-        print(result)
 
     que.close()
 
