@@ -17,6 +17,10 @@ jobs:
     steps:
       - checkout
 
+      - add_ssh_keys:
+          fingerprints:
+            db:4b:2b:f2:11:a7:eb:f6:c3:7f:34:7d:36:8f:8c:e8
+
       - run:
           name: ssh connetion test
           command: |
