@@ -13,7 +13,7 @@ QUERY_GPU = "nvidia-smi --query-gpu=timestamp,gpu_uuid,count,name,pstate,tempera
 QUERY_APP = "nvidia-smi --query-compute-apps=gpu_uuid,pid,process_name,used_memory --format=csv,noheader"
 
 
-def ssh_remote_command(entrypoint, command):
+def ssh_remote_command(entrypoint, command, timeout=1):
 
     def postprocessing(data):
         return [x.split(', ') for x in data.decode('utf-8').split('\n')[:-1]]
@@ -28,23 +28,27 @@ def ssh_remote_command(entrypoint, command):
                        stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
     try:
-        out, _ = ssh.communicate(timeout=1)    
+        out, err = ssh.communicate(timeout=timeout)
+        #print(out, err)
+        if err != b'':
+            return {'status': 'Error', 'entry': entrypoint, 'command': command, 'data': postprocessing(err)}
         return {'status': 'Success', 'entry': entrypoint, 'command': command, 'data': postprocessing(out)}
 
     except subprocess.TimeoutExpired:
         ssh.kill()
-        _, err = ssh.communicate()
+        out, err = ssh.communicate()
+        #print(out, err)
         return {'status': 'Timeout', 'entry': entrypoint, 'command': command, 'data': postprocessing(err)}
-    
 
-def get_gpus_status_v2(hosts):
+
+def get_gpus_status(hosts, timeout=1):
 
     result = {}
     que = Queue(maxsize=100)
     procs = []
 
     def run_command_and_inque(q, host, query):
-        result = ssh_remote_command(host, query)
+        result = ssh_remote_command(host, query, timeout=timeout)
         q.put(result)
 
     for host in hosts:
@@ -61,10 +65,16 @@ def get_gpus_status_v2(hosts):
         entry = item.get('entry')
         item_type = 'apps' if item.get('command') == QUERY_APP else 'gpus'
         
+        # new entry check
         if entry not in result.keys():
             result[entry] = {}
-        
-        result[entry].update({item_type: item.get('data')})
+
+        # error data check
+        data = {}
+        if item['status'] == 'Success':
+            data = item.get('data')
+
+        result[entry].update({item_type: data})
 
     que.close()
 
@@ -75,13 +85,13 @@ def display_gpu_status(hosts, data):
     """Display gpu status
     """
     for host in hosts:
-        gpu_stat = data[host]['gpus']
-        app_stat = data[host]['apps']
+        gpu_stat = data[host].get('gpus')
+        app_stat = data[host].get('apps')
         
         # print gpu stat
         # if gpu stat is empty
         print('[{:.30}]'.format(host), end='')
-        if len(gpu_stat) == 0:
+        if gpu_stat == None or app_stat == None or len(gpu_stat) == 0:
             print('\n|{}|'.format(' ERROR '), end='\n')
             continue
         else:
@@ -91,6 +101,7 @@ def display_gpu_status(hosts, data):
         for i, gpu in enumerate(gpu_stat):
             print("| {} | Temp {:2s}C | Util {:>5s} | Mem {:>6s} / {:9s} |".format(i, gpu[5], gpu[6], gpu[7][:-4], gpu[8]))
             
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-l', '--loop', action='store_true', help='loop forever')
@@ -111,7 +122,7 @@ def main():
     HOSTS = conf['hosts']
 
     while(True):
-        result = get_gpus_status_v2(HOSTS)
+        result = get_gpus_status(HOSTS)
 
         if args.loop:
             os.system('cls' if os.name == 'nt' else "printf '\033c'")
