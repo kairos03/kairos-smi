@@ -7,7 +7,7 @@ class test_ssh_remote_command(unittest.TestCase):
     def setUp(self):
         self.host = "mlvc07@163.180.186.49:2222"
         self.wrong_host = "test@123.123.123.123:2211"
-        self.timeout = 2
+        self.timeout = 10
 
     def tearDown(self):
         pass

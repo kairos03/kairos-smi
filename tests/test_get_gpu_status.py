@@ -7,7 +7,7 @@ class test_get_gpu_status(unittest.TestCase):
     def setUp(self):
         self.hosts = ["mlvc07@163.180.186.49:2222"]
         self.wrong_hosts = ["test@123.123.123.123:2211"]
-        self.timeout = 2
+        self.timeout = 10
 
     def test_get_gpu_status_success(self):
         # success case
