@@ -49,12 +49,12 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            python -m unittest discover -p "test_*.py" test
-      - store_test_results:
-          path: test-results
+            nosettests test/*
       - store_artifacts:
           path: test-reports
           destination: test-reports
+      - store_test_results:
+          path: test-results
 
   test-3.4:
     <<: *test-template
