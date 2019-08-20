@@ -36,11 +36,12 @@ def ssh_remote_command(entrypoint, command, timeout=1):
 
     except subprocess.TimeoutExpired:
         ssh.kill()
-        _, err = ssh.communicate()
+        out, err = ssh.communicate()
+        #print(out, err)
         return {'status': 'Timeout', 'entry': entrypoint, 'command': command, 'data': postprocessing(err)}
 
 
-def get_gpus_status(hosts, timeout=2):
+def get_gpus_status(hosts, timeout=1):
 
     result = {}
     que = Queue(maxsize=100)
