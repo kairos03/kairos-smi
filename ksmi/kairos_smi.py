@@ -29,7 +29,7 @@ def ssh_remote_command(entrypoint, command, timeout=1):
                        stderr=subprocess.PIPE)
     try:
         out, err = ssh.communicate(timeout=timeout)
-        print(out, err)
+        #print(out, err)
         if err != b'':
             return {'status': 'Error', 'entry': entrypoint, 'command': command, 'data': postprocessing(err)}
         return {'status': 'Success', 'entry': entrypoint, 'command': command, 'data': postprocessing(out)}
@@ -64,7 +64,7 @@ def get_gpus_status(hosts):
         entry = item.get('entry')
         item_type = 'apps' if item.get('command') == QUERY_APP else 'gpus'
         
-        if entry not in result.keys():
+        if entry not in result.keys() or item['status'] != 'Success':
             result[entry] = {}
         
         result[entry].update({item_type: item.get('data')})
@@ -72,6 +72,28 @@ def get_gpus_status(hosts):
     que.close()
 
     return result
+
+
+def display_gpu_status(hosts, data):
+    """Display gpu status
+    """
+    for host in hosts:
+        gpu_stat = data[host].get('gpus')
+        app_stat = data[host].get('apps')
+        
+        # print gpu stat
+        # if gpu stat is empty
+        print('[{:.30}]'.format(host), end='')
+        if gpu_stat == None or app_stat == None or len(gpu_stat) == 0:
+            print('\n|{}|'.format(' ERROR '), end='\n')
+            continue
+        else:
+            print('{:>26}'.format("Running [{:2}/{:2}]".format(len(app_stat), len(gpu_stat))), end='\n')
+        
+        # print apps
+        for i, gpu in enumerate(gpu_stat):
+            print("| {} | Temp {:2s}C | Util {:>5s} | Mem {:>6s} / {:9s} |".format(i, gpu[5], gpu[6], gpu[7][:-4], gpu[8]))
+            
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -93,7 +115,7 @@ def main():
     HOSTS = conf['hosts']
 
     while(True):
-        result = get_gpus_status_v2(HOSTS)
+        result = get_gpus_status(HOSTS)
 
         if args.loop:
             os.system('cls' if os.name == 'nt' else "printf '\033c'")
