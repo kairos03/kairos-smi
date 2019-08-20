@@ -7,7 +7,7 @@ class test_ssh_remote_command(unittest.TestCase):
     def setUp(self):
         self.host = "mlvc07@163.180.186.49:2222"
         self.wrong_host = "test@123.123.123.123:2211"
-        self.timeout = 10
+        self.timeout = 2
 
     def tearDown(self):
         pass
@@ -32,12 +32,3 @@ class test_ssh_remote_command(unittest.TestCase):
         # fail case
         result = ssh_remote_command(self.wrong_host, 'echo hello', self.timeout)
         self.assertEqual(result['status'], 'Timeout')
-
-if __name__ == "__main__":
-    import xmlrunner
-    unittest.main(
-        testRunner=xmlrunner.XMLTestRunner(output='test=reports'),
-        failfast=False,
-        buffer=False,
-        catchbreak=False
-    )
