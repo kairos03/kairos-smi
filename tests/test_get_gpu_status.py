@@ -47,3 +47,12 @@ class test_get_gpu_status(unittest.TestCase):
 
     #def test_main(self):
     #    main()
+
+if __name__ == "__main__":
+    import xmlrunner
+    unittest.main(
+        testRunner=xmlrunner.XMLTestRunner(output='test=reports'),
+        failfast=False,
+        buffer=False,
+        catchbreak=False
+    )

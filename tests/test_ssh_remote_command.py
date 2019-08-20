@@ -32,3 +32,12 @@ class test_ssh_remote_command(unittest.TestCase):
         # fail case
         result = ssh_remote_command(self.wrong_host, 'echo hello', self.timeout)
         self.assertEqual(result['status'], 'Timeout')
+
+if __name__ == "__main__":
+    import xmlrunner
+    unittest.main(
+        testRunner=xmlrunner.XMLTestRunner(output='test=reports'),
+        failfast=False,
+        buffer=False,
+        catchbreak=False
+    )

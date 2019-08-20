@@ -40,6 +40,13 @@ jobs:
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements.txt
+      
+      - run:
+          name: install test requirements
+          command: |
+            . venv/bin/activate
+            pip install nose
+
       - save_cache:
           paths:
             - ./venv
@@ -49,7 +56,7 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            nosettests test/*
+            nosettests -v test/*
       - store_artifacts:
           path: test-reports
           destination: test-reports
