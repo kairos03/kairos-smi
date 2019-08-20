@@ -12,7 +12,7 @@ class test_get_gpu_status(unittest.TestCase):
     def test_get_gpu_status_success(self):
         # success case
         results = get_gpus_status(self.hosts, self.timeout)
-        print(results)
+        #print(results)
         self.assertEqual(type(results), type({}))
         self.assertEqual(len(results), 1)
         self.assertTrue(self.hosts[0] in results.keys())
@@ -32,7 +32,7 @@ class test_get_gpu_status(unittest.TestCase):
         self.assertEqual(len(results), 1)
         self.assertTrue(self.wrong_hosts[0] in results.keys())
         for entry in results.keys():
-            print(results)
+            #print(results)
             self.assertEqual(type(results[entry]), type({}))
             self.assertEqual(len(results[entry]), 2)
             self.assertTrue('gpus' in results[entry].keys())
