@@ -131,29 +131,12 @@ def get_apps_status(hosts, data):
                 app_stat = [app for idx, app in enumerate(app_stat) if idx not in used_indices]
             # print processes
     return apps_status_result
-    
 
-def get_groupped_app(gpu_stat, app_stat):
-
-    result = []
-    cache = {}
-
-    for i, gpu in enumerate(gpu_stat):
-        gpu_uuid = gpu_stat[0]
-        for i, app in enumerate(app_stat):
-            if gpu_uuid == app_stat[0]:
-                if app_stat[1] in cache:
-                    cache[app_stat[1]] += 1
-                
-                cache[app_stat] 
-
-                
-
-
-def display_gpu_status(hosts, data, app_data):
+# params: target_user => display all the processes by "target_user"
+def display_gpu_status(hosts, data, app_data, target_user=None):
     """Display gpu status
     """
-
+    print(target_user)
 
     def run_command_query_process_details(q, host, query):
         result = ssh_remote_command(host, query, 'ps')
@@ -180,10 +163,15 @@ def display_gpu_status(hosts, data, app_data):
                 ps_infos = Queue(maxsize=100)
                 if gpu[1] in app_data[host].keys():
                     for i, app in enumerate(app_data[host][gpu[1]]):
-                        if i == len(app_data[host][gpu[1]]) - 1:
-                            print("\t└── process PID {:s} | Username {:s} | used_memory {:s} ".format(app[0], app[1], app[2]))
+                        if target_user is not None:
+                            if target_user == app[1]:
+                                print("\t└── process PID {:s} | Username {:s} | command {:s} ".format(app[0], app[1], app[3]))
+
                         else:
-                            print("\t├── process PID {:s} | Username {:s} | used_memory {:s} ".format(app[0], app[1], app[2]))
+                            if i == len(app_data[host][gpu[1]]) - 1:
+                                print("\t└── process PID {:s} | Username {:s} | used_memory {:s} ".format(app[0], app[1], app[2]))
+                            else:
+                                print("\t├── process PID {:s} | Username {:s} | used_memory {:s} ".format(app[0], app[1], app[2]))
                     
                         
             
@@ -192,6 +180,7 @@ def get_args():
     parser.add_argument('-l', '--loop', action='store_true', help='loop forever')
     parser.add_argument('-c', '--config', default='config.json', help='set config file location')
     parser.add_argument('-p', '--process', action='store_true', help='watch process details (PID, owner, memory, etc)')
+    parser.add_argument('-u', '--user', default=None, help='find all the processes by username')
     args = parser.parse_args()
     return args
 
@@ -223,7 +212,7 @@ def main():
 
         logging.debug("result {}".format(result))
 
-        display_gpu_status(HOSTS, result, app_result)
+        display_gpu_status(HOSTS, result, app_result, args.user)
         
         if not args.loop:
             
