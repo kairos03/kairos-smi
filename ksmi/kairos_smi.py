@@ -23,7 +23,7 @@ def ssh_remote_command(entrypoint, command, timeout=1):
     except ValueError:
         host, port = entrypoint, '22'
 
-    ssh = subprocess.Popen(['ssh', '-vvv', host, '-p', port, command],
+    ssh = subprocess.Popen(['ssh', host, '-p', port, command],
                        shell=False,
                        stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
