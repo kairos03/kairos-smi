@@ -7,10 +7,11 @@ class test_get_gpu_status(unittest.TestCase):
     def setUp(self):
         self.hosts = ["mlvc07@163.180.186.49:2222"]
         self.wrong_hosts = ["test@123.123.123.123:2211"]
+        self.timeout = 10
 
     def test_get_gpu_status_success(self):
         # success case
-        results = get_gpus_status(self.hosts)
+        results = get_gpus_status(self.hosts, self.timeout)
         print(results)
         self.assertEqual(type(results), type({}))
         self.assertEqual(len(results), 1)
@@ -26,7 +27,7 @@ class test_get_gpu_status(unittest.TestCase):
 
     def test_get_gpu_status_fail(self):
         # fail case
-        results = get_gpus_status(self.wrong_hosts)
+        results = get_gpus_status(self.wrong_hosts, self.timeout)
         self.assertEqual(type(results), type({}))
         self.assertEqual(len(results), 1)
         self.assertTrue(self.wrong_hosts[0] in results.keys())

@@ -73,8 +73,6 @@ def get_gpus_status(hosts, timeout=1):
         data = {}
         if item['status'] == 'Success':
             data = item.get('data')
-        else:
-            print(data)
 
         result[entry].update({item_type: data})
 

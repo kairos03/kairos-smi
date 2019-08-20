@@ -26,7 +26,6 @@ class test_ssh_remote_command(unittest.TestCase):
     def test_query_success(self):
         # success case
         result = ssh_remote_command(self.host, QUERY_GPU, self.timeout)
-        print(result)
         self.assertEqual(result['status'], 'Success')
         
     def test_query_fail(self):
