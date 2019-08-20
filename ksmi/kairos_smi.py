@@ -17,12 +17,11 @@ APP_DETAIL_QUERY_INTERVAL = 10
 
 def postprocessing(data, type='ssh'):
     if type == 'ssh':
-
         return [x.split(', ') for x in data.decode('utf-8').split('\n')[:-1]]
     elif type == 'ps':
         return data.decode('utf-8').split('\n')[:-1]
 
-def ssh_remote_command(entrypoint, command, type='ssh'):
+def ssh_remote_command(entrypoint, command, timeout=1, type='ssh'):
 
     try:
         host, port = entrypoint.split(':')
@@ -34,23 +33,27 @@ def ssh_remote_command(entrypoint, command, type='ssh'):
                        stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
     try:
-        out, _ = ssh.communicate(timeout=1)    
+        out, err = ssh.communicate(timeout=timeout)
+        #print(out, err)
+        if err != b'':
+            return {'status': 'Error', 'entry': entrypoint, 'command': command, 'data': postprocessing(err, type)}
         return {'status': 'Success', 'entry': entrypoint, 'command': command, 'data': postprocessing(out, type)}
 
     except subprocess.TimeoutExpired:
         ssh.kill()
-        _, err = ssh.communicate()
+        out, err = ssh.communicate()
+        #print(out, err)
         return {'status': 'Timeout', 'entry': entrypoint, 'command': command, 'data': postprocessing(err, type)}
-    
 
-def get_gpus_status_v2(hosts):
+
+def get_gpus_status(hosts, timeout=1):
 
     result = {}
     que = Queue(maxsize=100)
     procs = []
 
     def run_command_and_inque(q, host, query):
-        result = ssh_remote_command(host, query)
+        result = ssh_remote_command(host, query, timeout=timeout)
         q.put(result)
 
     for host in hosts:
@@ -67,10 +70,16 @@ def get_gpus_status_v2(hosts):
         entry = item.get('entry')
         item_type = 'apps' if item.get('command') == QUERY_APP else 'gpus'
         
+        # new entry check
         if entry not in result.keys():
             result[entry] = {}
-        
-        result[entry].update({item_type: item.get('data')})
+
+        # error data check
+        data = {}
+        if item['status'] == 'Success':
+            data = item.get('data')
+
+        result[entry].update({item_type: data})
 
     que.close()
 
@@ -134,6 +143,7 @@ def get_apps_status(hosts, data):
 
 # params: target_user => display all the processes by "target_user"
 def display_gpu_status(hosts, data, app_data, target_user=None):
+
     """Display gpu status
     """
     print(target_user)
@@ -143,12 +153,12 @@ def display_gpu_status(hosts, data, app_data, target_user=None):
         q.put(result)
 
     for host in hosts:
-        gpu_stat = data[host]['gpus']
-        app_stat = data[host]['apps']
+        gpu_stat = data[host].get('gpus')
+        app_stat = data[host].get('apps')
         
         # if gpu stat is empty
         print('[{:.30}]'.format(host), end='')
-        if len(gpu_stat) == 0:
+        if gpu_stat == None or app_stat == None or len(gpu_stat) == 0:
             print('\n|{}|'.format(' ERROR '), end='\n')
             continue
         else:
@@ -175,6 +185,7 @@ def display_gpu_status(hosts, data, app_data, target_user=None):
                     
                         
             
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-l', '--loop', action='store_true', help='loop forever')
@@ -199,7 +210,7 @@ def main():
 
     num_it = 0
     while(True):
-        result = get_gpus_status_v2(HOSTS)
+        result = get_gpus_status(HOSTS)
 
         if args.process:
             if num_it % APP_DETAIL_QUERY_INTERVAL == 0:
