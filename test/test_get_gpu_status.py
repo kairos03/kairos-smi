@@ -8,7 +8,7 @@ class test_get_gpu_status(unittest.TestCase):
         self.hosts = ["mlvc07@163.180.186.49:2222"]
         self.wrong_hosts = ["test@123.123.123.123:2211"]
 
-    def test_get_gpu_status(self):
+    def test_get_gpu_status_success(self):
         # success case
         results = get_gpus_status(self.hosts)
         #print(results)
@@ -24,16 +24,17 @@ class test_get_gpu_status(unittest.TestCase):
             self.assertTrue(len(results[entry]['apps']) != 0)
             # print(results[entry]['apps'])
 
+    def test_get_gpu_status_fail(self):
         # fail case
-        hosts = ["mlvcgpu@testtest:16022"]
-        results = get_gpus_status(hosts)
+        results = get_gpus_status(self.wrong_hosts)
         #print(results)
         self.assertEqual(type(results), type({}))
         self.assertEqual(len(results), 1)
-        self.assertTrue(hosts[0] in results.keys())
+        self.assertTrue(self.wrong_hosts[0] in results.keys())
         for entry in results.keys():
+            print(results)
             self.assertEqual(type(results[entry]), type({}))
-            self.assertEqual(len(results[entry]), 7)
+            self.assertEqual(len(results[entry]), 2)
             self.assertTrue('gpus' in results[entry].keys())
             self.assertTrue('apps' in results[entry].keys())
             self.assertTrue(len(results[entry]['gpus']) == 0)

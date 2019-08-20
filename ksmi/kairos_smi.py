@@ -64,10 +64,18 @@ def get_gpus_status(hosts):
         entry = item.get('entry')
         item_type = 'apps' if item.get('command') == QUERY_APP else 'gpus'
         
-        if entry not in result.keys() or item['status'] != 'Success':
+        # new entry check
+        if entry not in result.keys():
             result[entry] = {}
-        
-        result[entry].update({item_type: item.get('data')})
+
+        # error data check
+        data = {}
+        if item['status'] == 'Success':
+            data = item.get('data')
+
+        result[entry].update({item_type: data})
+        print(item)
+        print(result)
 
     que.close()
 
