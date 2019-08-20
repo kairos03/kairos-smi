@@ -20,7 +20,7 @@ jobs:
       - run:
           name: ssh connetion test
           command: |
-            ssh -o StrictHostKeyChecking=no mlvc07@163.180.186.49 -p 2222 "echo test"
+            ssh -vvv -o StrictHostKeyChecking=no mlvc07@163.180.186.49 -p 2222 "echo test"
 
       # Download and cache dependencies
       - restore_cache:
