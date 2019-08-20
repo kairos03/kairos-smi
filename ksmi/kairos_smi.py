@@ -40,14 +40,14 @@ def ssh_remote_command(entrypoint, command, timeout=1):
         return {'status': 'Timeout', 'entry': entrypoint, 'command': command, 'data': postprocessing(err)}
 
 
-def get_gpus_status(hosts):
+def get_gpus_status(hosts, timeout=2):
 
     result = {}
     que = Queue(maxsize=100)
     procs = []
 
     def run_command_and_inque(q, host, query):
-        result = ssh_remote_command(host, query, timeout=2)
+        result = ssh_remote_command(host, query, timeout=timeout)
         q.put(result)
 
     for host in hosts:

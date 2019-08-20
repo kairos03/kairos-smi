@@ -1,32 +1,27 @@
-# Python CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-python/ for more details
-#
 version: 2
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test-3.4
+      - test-3.5
+      - test-3.6
+      - test-2.7
 jobs:
-  build:
+  test-3.5: &test-template
     docker:
-      # specify the version you desire here
-      - image: circleci/python:3.6.1
+      - image: circleci/python:3.5-jessie
 
     working_directory: ~/repo
 
     steps:
       - checkout
-
-      # ssh test
-      - run:
-          name: ssh test
-          command: |
-            ssh -o StrictHostKeyChecking=no mlvc07@163.180.186.49 -p 2222 "echo test"
-
       # Download and cache dependencies
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "requirements.txt" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
-
       - run:
           name: install dependencies
           command: |
@@ -37,13 +32,29 @@ jobs:
           paths:
             - ./venv
           key: v1-dependencies-{{ checksum "requirements.txt" }}
-
       # run tests
       - run:
           name: run tests
           command: |
             . venv/bin/activate
             python -m unittest discover -p "test_*.py" test
+      - store_test_results:
+          path: test-results
       - store_artifacts:
           path: test-reports
           destination: test-reports
+
+  test-3.4:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.4-jessie
+
+  test-3.6:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.6-jessie
+
+  test-3.7:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.7-jessie
