@@ -89,6 +89,8 @@ def display_gpu_status(hosts, data):
         
         # print apps
         for i, gpu in enumerate(gpu_stat):
+            if len(gpu) != 9:
+                continue
             print("| {} | Temp {:2s}C | Util {:>5s} | Mem {:>6s} / {:9s} |".format(i, gpu[5], gpu[6], gpu[7][:-4], gpu[8]))
             
 def get_args():
