@@ -1,7 +1,7 @@
 # kairos-smi
 Multi-server gpu monitoring program  
 
-[![PyPI version](https://badge.fury.io/py/ksmi.svg)](https://badge.fury.io/py/ksmi)
+[![PyPI version](https://badge.fury.io/py/ksmi.svg)](https://badge.fury.io/py/ksmi) [![CircleCI](https://circleci.com/gh/kairos03/kairos-smi.svg?style=svg)](https://circleci.com/gh/kairos03/kairos-smi)
 
 See change Log: [change log](change_logs/v0.1.3.1.md)
 
