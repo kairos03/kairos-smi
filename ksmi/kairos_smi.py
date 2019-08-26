@@ -87,6 +87,7 @@ def display_gpu_status(hosts, data):
     for host in hosts:
         gpu_stat = data[host].get('gpus')
         app_stat = data[host].get('apps')
+        active_gpus = len(set(app_info[0] for app_info in app_stat))
         
         # print gpu stat
         # if gpu stat is empty
@@ -95,7 +96,7 @@ def display_gpu_status(hosts, data):
             print('\n|{}|'.format(' ERROR '), end='\n')
             continue
         else:
-            print('{:>26}'.format("Running [{:2}/{:2}]".format(len(app_stat), len(gpu_stat))), end='\n')
+            print('{:>26}'.format("APPs [{:2}] GPUs [{:2}/{:2}]".format(len(app_stat), active_gpus, len(gpu_stat))), end='\n')
         
         # print apps
         for i, gpu in enumerate(gpu_stat):
