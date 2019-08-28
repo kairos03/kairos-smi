@@ -28,6 +28,7 @@ def display(screen, hosts, data):
     for host in hosts:
         gpu_stat = data[host].get('gpus')
         app_stat = data[host].get('apps')
+        active_gpus = len(set(app_info[0] for app_info in app_stat))
         
         # print gpu stat
         # if gpu stat is empty
@@ -36,7 +37,7 @@ def display(screen, hosts, data):
             screen.addstr('\n| ERROR |')
             continue
         else:
-            screen.addstr('{:>20}'.format("Running [{:2}/{:2}]\n".format(len(app_stat), len(gpu_stat))))
+            screen.addstr('{:>20}'.format("Apps {:2} GPUs {:2}/{:2}\n".format(len(app_stat), active_gpus, len(gpu_stat))))
             screen.addstr("| No | Temp | Utils |       Memory       |\n")
         
         # print apps
