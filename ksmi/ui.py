@@ -7,11 +7,11 @@ import curses
 MIN_COL_LEN=100
 
 
-def main(hosts, data):
-    curses.wrapper(display, hosts, data)
+def display(hosts, data):
+    curses.wrapper(_display, hosts, data)
 
 
-def display(screen, hosts, data):
+def _display(screen, hosts, data):
     # get display size
     _, cols = screen.getmaxyx()
     # ditermin num cols
@@ -38,16 +38,17 @@ def display(screen, hosts, data):
             continue
         else:
             screen.addstr('{:>20}'.format("Apps {:2} GPUs {:2}/{:2}\n".format(len(app_stat), active_gpus, len(gpu_stat))))
-            screen.addstr("| No | Temp | Utils |       Memory       |\n")
+            screen.addstr("| No | Temp | Util% | Mem % |       Memory       |\n")
         
         # print apps
         for i, gpu in enumerate(gpu_stat):
             if len(gpu) != 9:
                 continue
-            screen.addstr("| {:2} | {:3s}C | {:>5s} | {:>6s} / {:9s} |\n".format(i, gpu[5], gpu[6], gpu[7][:-4], gpu[8]))
+            screen.addstr("| {:2} | {:3s}C | {:>5s} | {:>3.0f} % | {:>6s} / {:9s} |\n".format(i, gpu[5], gpu[6], float(gpu[7][:-4])/float(gpu[8][:-4]) * 100, gpu[7][:-4], gpu[8]))
             
     screen.refresh()
     screen.getkey()
+
 
 if __name__ == "__main__":
     hosts = ["mlvc07@163.180.186.49:2222"]
@@ -63,4 +64,4 @@ if __name__ == "__main__":
                     ]
                 }
             }
-    main(hosts, data)
+    display(hosts, data)
