@@ -133,7 +133,7 @@ def get_apps_status(hosts, data, timeout=1):
             apps_detail = que.get().get('data')
             for i, app in enumerate(nvidia_app_infos):
                 app_detail = apps_detail[i]
-                username, command = app_detail.split(' ')[0], ''.join(app_detail.split(' ')[1:])
+                username, command = app_detail.split(" ", 1)
                 apps_status_result[host][gpu_uuid].append([app[1], username, app[3], command])
 
             # for fast search, delete already searched processes
@@ -178,10 +178,7 @@ def display_gpu_status(hosts, data, app_data, target_user=None):
                                 print("\t└── process PID {:s} | Username {:s} | command {:s} ".format(app[0], app[1], app[3]))
 
                         else:
-                            if i == len(app_data[host][gpu[1]]) - 1:
-                                print("\t└── process PID {:s} | Username {:s} | used_memory {:s} ".format(app[0], app[1], app[2]))
-                            else:
-                                print("\t├── process PID {:s} | Username {:s} | used_memory {:s} ".format(app[0], app[1], app[2]))
+                            print("\t└── process PID {:s} | Username {:s} | used_memory {:s} ".format(app[0], app[1], app[2]))
                     
                         
             
