@@ -18,12 +18,9 @@ jobs:
       - checkout
 
       - run:
-        name: check env
-
-      - run:
-        name: add_ssh_key
-        command: |
-          echo $TESTVAR
+          name: add_ssh_key
+          command: |
+            echo $TESTVAR
         
       - run:
           name: ssh connetion test
