@@ -10,6 +10,7 @@ DEBUG=False
 def init_screen():
     # init screen
     screen = curses.initscr()
+    curses.newwin(50, 100)
     curses.noecho()
     curses.nocbreak()
     curses.curs_set(0)
@@ -19,6 +20,13 @@ def init_screen():
     curses.init_pair(3, curses.COLOR_BLUE, curses.COLOR_BLACK)
     screen.nodelay(True)
     return screen
+
+def cleanup_screen():
+    curses.nl()
+    curses.echo()
+    curses.cbreak()
+    curses.curs_set(1)
+    curses.endwin()
 
 def display(hosts, data):
     curses.wrapper(_display, hosts, data)

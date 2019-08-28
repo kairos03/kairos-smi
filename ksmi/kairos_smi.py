@@ -46,6 +46,8 @@ def ssh_remote_command(entrypoint, command, timeout=1):
         #print(out, err)
         return {'status': 'Timeout', 'entry': entrypoint, 'command': command, 'data': postprocessing(err)}
 
+    except KeyboardInterrupt:
+        pass
 
 def get_gpus_status(hosts, timeout=1):
 
@@ -132,22 +134,27 @@ def main():
 
     # init screen
     screen = ui.init_screen()
-    try:
-        while(True):
-            result = get_gpus_status(HOSTS)
+    while(True):
+        result = get_gpus_status(HOSTS)
 
-            logging.debug("result {}".format(result))
-            try:
-                ui._display(screen, HOSTS, result)
-            except curses.error:
-                pass
+        key = screen.getch()
+        if key == ord('q'):
+            curses.endwin()
+            break
 
-            if not args.loop:
-                break
-    except:
-        pass
-    finally:
-        curses.endwin()
+        logging.debug("result {}".format(result))
+        try:
+            ui._display(screen, HOSTS, result)
+        except curses.error:
+            pass
+
+        if not args.loop:
+            break
+
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        ui.cleanup_screen()
+        exit(0)
