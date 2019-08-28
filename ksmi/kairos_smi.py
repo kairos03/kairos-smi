@@ -5,6 +5,12 @@ import json
 from multiprocessing import Process, Queue
 import argparse
 import logging
+import curses
+
+try: 
+    from . import ui
+except ImportError:
+    import ui
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -80,7 +86,7 @@ def get_gpus_status(hosts, timeout=1):
 
     return result
 
-
+@DeprecationWarning
 def display_gpu_status(hosts, data):
     """Display gpu status
     """
@@ -124,19 +130,24 @@ def main():
 
     HOSTS = conf['hosts']
 
+    # init screen
+    screen = ui.init_screen()
+
     while(True):
         result = get_gpus_status(HOSTS)
 
-        if args.loop:
-            os.system('cls' if os.name == 'nt' else "printf '\033c'")
-
+        # if args.loop:
+        #     os.system('cls' if os.name == 'nt' else "printf '\033c'")
         logging.debug("result {}".format(result))
-        display_gpu_status(HOSTS, result)
-        
-        if not args.loop:
-            
-            break
+        try:
+            ui._display(screen, HOSTS, result)
+        except curses.error:
+            pass
 
+        key = screen.getch()
+        if not args.loop or key == ord('q'):
+            break
+    curses.endwin()
 
 if __name__ == '__main__':
     main()
