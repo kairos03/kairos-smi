@@ -132,22 +132,25 @@ def main():
 
     # init screen
     screen = ui.init_screen()
+    try:
+        while(True):
+            result = get_gpus_status(HOSTS)
 
-    while(True):
-        result = get_gpus_status(HOSTS)
+            # if args.loop:
+            #     os.system('cls' if os.name == 'nt' else "printf '\033c'")
+            logging.debug("result {}".format(result))
+            try:
+                ui._display(screen, HOSTS, result)
+            except curses.error:
+                pass
 
-        # if args.loop:
-        #     os.system('cls' if os.name == 'nt' else "printf '\033c'")
-        logging.debug("result {}".format(result))
-        try:
-            ui._display(screen, HOSTS, result)
-        except curses.error:
-            pass
-
-        key = screen.getch()
-        if not args.loop or key == ord('q'):
-            break
-    curses.endwin()
+            key = screen.getch()
+            if not args.loop or key == ord('q'):
+                break
+    except:
+        pass
+    finally:
+        curses.endwin()
 
 if __name__ == '__main__':
     main()
