@@ -136,16 +136,13 @@ def main():
         while(True):
             result = get_gpus_status(HOSTS)
 
-            # if args.loop:
-            #     os.system('cls' if os.name == 'nt' else "printf '\033c'")
             logging.debug("result {}".format(result))
             try:
                 ui._display(screen, HOSTS, result)
             except curses.error:
                 pass
 
-            key = screen.getch()
-            if not args.loop or key == ord('q'):
+            if not args.loop:
                 break
     except:
         pass
