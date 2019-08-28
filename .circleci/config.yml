@@ -17,10 +17,14 @@ jobs:
     steps:
       - checkout
 
-      - add_ssh_keys:
-          fingerprints:
-            - c6:10:d3:dd:e5:98:ce:09:00:40:0f:c1:84:fb:e9:ab
+      - run:
+        name: check env
 
+      - run:
+        name: add_ssh_key
+        command: |
+          echo $TESTVAR
+        
       - run:
           name: ssh connetion test
           command: |
