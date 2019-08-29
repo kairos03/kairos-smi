@@ -1,3 +1,4 @@
 from . import kairos_smi
 
-kairos_smi.main()
+if __name__ == "__main__":
+    kairos_smi.main()

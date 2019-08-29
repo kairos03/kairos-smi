@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='ksmi',
-    version='0.2.0',
+    version='0.2.2a1',
     url='https://github.com/kairos03/kairos-smi',
     license='MIT',
     author='Eunseop Shin',

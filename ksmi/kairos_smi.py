@@ -5,6 +5,12 @@ import json
 from multiprocessing import Process, Queue
 import argparse
 import logging
+import curses
+
+try: 
+    from . import ui
+except ImportError:
+    import ui
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -45,6 +51,8 @@ def ssh_remote_command(entrypoint, command, timeout=1, type='ssh'):
         #print(out, err)
         return {'status': 'Timeout', 'entry': entrypoint, 'command': command, 'data': postprocessing(err, type)}
 
+    except KeyboardInterrupt:
+        pass
 
 def get_gpus_status(hosts, timeout=1):
 
@@ -142,10 +150,11 @@ def get_apps_status(hosts, data, timeout=1):
             # print processes
     return apps_status_result
 
-# params: target_user => display all the processes by "target_user"
-def display_gpu_status(hosts, data, app_data, target_user=None):
 
+@DeprecationWarning
+def display_gpu_status(hosts, data, app_data, target_user=None):
     """Display gpu status
+       params: target_user => display all the processes by "target_user"
     """
 
     def run_command_query_process_details(q, host, query):
@@ -155,6 +164,7 @@ def display_gpu_status(hosts, data, app_data, target_user=None):
     for host in hosts:
         gpu_stat = data[host].get('gpus')
         app_stat = data[host].get('apps')
+        active_gpus = len(set(app_info[0] for app_info in app_stat))
         
         # if gpu stat is empty
         print('[{:.30}]'.format(host), end='')
@@ -162,10 +172,12 @@ def display_gpu_status(hosts, data, app_data, target_user=None):
             print('\n|{}|'.format(' ERROR '), end='\n')
             continue
         else:
-            print('{:>26}'.format("Running [{:2}/{:2}]".format(len(app_stat), len(gpu_stat))), end='\n')
+            print('{:>26}'.format("APPs [{:2}] GPUs [{:2}/{:2}]".format(len(app_stat), active_gpus, len(gpu_stat))), end='\n')
         
         # print apps
         for i, gpu in enumerate(gpu_stat):
+            if len(gpu) != 9:
+                continue
             print("| {} | Temp {:2s}C | Util {:>5s} | Mem {:>6s} / {:9s} |".format(i, gpu[5], gpu[6], gpu[7][:-4], gpu[8]))
             # for fast search 
             if app_data:
@@ -185,7 +197,6 @@ def display_gpu_status(hosts, data, app_data, target_user=None):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-l', '--loop', action='store_true', help='loop forever')
     parser.add_argument('-c', '--config', default='config.json', help='set config file location')
     parser.add_argument('-p', '--process', action='store_true', help='watch process details (PID, owner, memory, etc)')
     parser.add_argument('-u', '--user', default=None, help='find all the processes by username')
@@ -226,6 +237,31 @@ def main():
             
             break
         num_it += 1
+    """
+    # init screen
+    screen = ui.init_screen()
+    while(True):
+        result = get_gpus_status(HOSTS)
+
+        key = screen.getch()
+        if key == ord('q'):
+            curses.endwin()
+            break
+
+        logging.debug("result {}".format(result))
+        try:
+            ui.display(screen, HOSTS, result)
+        except curses.error:
+            pass
+
+    """
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
+    except Exception as e:
+        print(e)
+    finally:
+        ui.cleanup_screen()
