@@ -5,6 +5,12 @@ import json
 from multiprocessing import Process, Queue
 import argparse
 import logging
+import curses
+
+try: 
+    from . import ui
+except ImportError:
+    import ui
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -47,6 +53,8 @@ def ssh_remote_command(entrypoint, command, type='ssh'):
         #print(out, err)
         return {'status': 'Timeout', 'entry': entrypoint, 'command': command, 'data': postprocessing(err)}
 
+    except KeyboardInterrupt:
+        pass
 
 def get_gpus_status(hosts, timeout=1):
 
@@ -87,81 +95,8 @@ def get_gpus_status(hosts, timeout=1):
 
     return result
 
-def get_apps_status(hosts, data):
-
-
-    apps_status_result = {}
-
-    def run_command_query_process_details(q, host, query):
-        result = ssh_remote_command(host, query, 'ps')
-        q.put(result)
-
-    for host in hosts:
-        gpu_stat = data[host]['gpus']
-        app_stat = data[host]['apps']
-        
-        # print apps
-        for i, gpu in enumerate(gpu_stat):
-
-            gpu_uuid = gpu[1]
-            if host not in apps_status_result.keys():
-                apps_status_result[host] = {}
-
-            if gpu_uuid not in apps_status_result[host].keys():
-                apps_status_result[host][gpu_uuid] = []
-
-            nvidia_app_infos = []
-            ps_infos = Queue(maxsize=100)
-            
-            # for fast search 
-            used_indices = []
-            if True:
-                for i, app in enumerate(app_stat):
-                    # if app's gpu is same as current gpu
-                    if app[0] == gpu[1]:
-                        nvidia_app_infos.append(app)
-                        used_indices.append(i)
-                
-
-                pids = [app[1] for app in nvidia_app_infos]
-                pids_cat = " ".join(pids)           
-                que = Queue(maxsize=100)
-                query = "ps -o user=,command= -p {:s}".format(pids_cat)
-                proc = Process(target=run_command_query_process_details, args=(que, host, query))
-                proc.start()
-                proc.join()
-                        
-                apps_detail = que.get().get('data')
-                for i, app in enumerate(nvidia_app_infos):
-                    app_detail = apps_detail[i]
-                    username, command = app_detail.split(' ')[0], ''.join(app_detail.split(' ')[1:])
-                    apps_status_result[host][gpu_uuid].append([app[1], username, app[3], command])
-
-                # for fast search, delete already searched processes
-
-                app_stat = [app for idx, app in enumerate(app_stat) if idx not in used_indices]
-            # print processes
-    return apps_status_result
-    
-
-def get_groupped_app(gpu_stat, app_stat):
-
-    result = []
-    cache = {}
-
-    for i, gpu in enumerate(gpu_stat):
-        gpu_uuid = gpu_stat[0]
-        for i, app in enumerate(app_stat):
-            if gpu_uuid == app_stat[0]:
-                if app_stat[1] in cache:
-                    cache[app_stat[1]] += 1
-                
-                cache[app_stat] 
-
-                
-
-
-def display_gpu_status(hosts, data, app_data):
+@DeprecationWarning
+def display_gpu_status(hosts, data):
     """Display gpu status
     """
 
@@ -173,6 +108,7 @@ def display_gpu_status(hosts, data, app_data):
     for host in hosts:
         gpu_stat = data[host].get('gpus')
         app_stat = data[host].get('apps')
+        active_gpus = len(set(app_info[0] for app_info in app_stat))
         
         # if gpu stat is empty
         print('[{:.30}]'.format(host), end='')
@@ -180,7 +116,7 @@ def display_gpu_status(hosts, data, app_data):
             print('\n|{}|'.format(' ERROR '), end='\n')
             continue
         else:
-            print('{:>26}'.format("Running [{:2}/{:2}]".format(len(app_stat), len(gpu_stat))), end='\n')
+            print('{:>26}'.format("APPs [{:2}] GPUs [{:2}/{:2}]".format(len(app_stat), active_gpus, len(gpu_stat))), end='\n')
         
         # print apps
         for i, gpu in enumerate(gpu_stat):
@@ -204,7 +140,6 @@ def display_gpu_status(hosts, data, app_data):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-l', '--loop', action='store_true', help='loop forever')
     parser.add_argument('-c', '--config', default='config.json', help='set config file location')
     args = parser.parse_args()
     return args
@@ -222,24 +157,29 @@ def main():
     HOSTS = conf['hosts']
     APP_DETAIL_QUERY_INTERVAL = 10
 
-    num_it = 0
+    # init screen
+    screen = ui.init_screen()
     while(True):
         result = get_gpus_status(HOSTS)
 
-        if num_it % APP_DETAIL_QUERY_INTERVAL == 0:
-            app_result = get_apps_status(HOSTS, result)
-
-        if args.loop:
-            os.system('cls' if os.name == 'nt' else "printf '\033c'")
+        key = screen.getch()
+        if key == ord('q'):
+            curses.endwin()
+            break
 
         logging.debug("result {}".format(result))
+        try:
+            ui.display(screen, HOSTS, result)
+        except curses.error:
+            pass
 
-        display_gpu_status(HOSTS, result, app_result)
-        
-        if not args.loop:
-            
-            break
-        num_it += 1
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
+    except Exception as e:
+        print(e)
+    finally:
+        ui.cleanup_screen()
