@@ -1,0 +1,79 @@
+version: 2
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test-3.4
+      - test-3.5
+      - test-3.6
+      - test-3.7
+jobs:
+  test-3.5: &test-template
+    docker:
+      - image: circleci/python:3.5
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - add_ssh_keys:
+          fingerprints:
+            - c6:10:d3:dd:e5:98:ce:09:00:40:0f:c1:84:fb:e9:ab
+
+      - run:
+          name: ssh connetion test
+          command: |
+            ls ~/.ssh/
+            cat ~/.ssh/config
+            ssh -o StrictHostKeyChecking=no mlvc07@163.180.186.49 -p 2222 "echo test"
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements.txt" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+      
+      - run:
+          name: install test requirements
+          command: |
+            . venv/bin/activate
+            pip install nose
+
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+      # run tests
+      - run:
+          name: run tests
+          command: |
+            . venv/bin/activate
+            nosetests -v tests/*
+      - store_artifacts:
+          path: test-reports
+          destination: test-reports
+      - store_test_results:
+          path: test-results
+
+  test-3.4:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.4
+
+  test-3.6:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.6
+
+  test-3.7:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.7
