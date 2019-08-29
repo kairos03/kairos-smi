@@ -30,4 +30,3 @@ class test_display(unittest.TestCase):
 
     def test_display(self):
         ui.display(self.screen, self.hosts, self.data)
-        print(self.screen.)
