@@ -22,7 +22,6 @@ def init_screen():
     return screen
 
 def cleanup_screen():
-    curses.nl()
     curses.echo()
     curses.cbreak()
     curses.curs_set(1)
