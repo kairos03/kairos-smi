@@ -1,6 +1,8 @@
 # Version 0.2.2
 **v0.2.2a1: august 29**
 
+Download: [python3](https://pypi.org/project/ksmi/0.2.2a1/)
+
 ---
 Welcome to v0.2.2 version of Ksmi. There are a number of updates in theis version.
  - [UI update](#ui-update) - new mordern ui and colorful mode.
