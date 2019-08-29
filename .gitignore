@@ -123,4 +123,5 @@ dmypy.json
 .pyre/
 
 **/config.json
+**/config.test.json
 .vscode/

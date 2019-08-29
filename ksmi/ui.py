@@ -12,7 +12,7 @@ def init_screen():
     screen = curses.initscr()
     curses.newwin(50, 100)
     curses.noecho()
-    curses.nocbreak()
+    #curses.nocbreak()
     curses.curs_set(0)
     curses.start_color()
     curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
@@ -23,15 +23,11 @@ def init_screen():
 
 def cleanup_screen():
     curses.echo()
-    curses.cbreak()
+    #curses.cbreak()
     curses.curs_set(1)
     curses.endwin()
 
-def display(hosts, data):
-    curses.wrapper(_display, hosts, data)
-
-
-def _display(screen, hosts, data):
+def display(screen, hosts, data):
     # get display size
     _, cols = screen.getmaxyx()
     # ditermin num cols

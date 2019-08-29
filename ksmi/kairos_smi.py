@@ -144,7 +144,7 @@ def main():
 
         logging.debug("result {}".format(result))
         try:
-            ui._display(screen, HOSTS, result)
+            ui.display(screen, HOSTS, result)
         except curses.error:
             pass
 
