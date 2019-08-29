@@ -115,7 +115,6 @@ def display_gpu_status(hosts, data):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-l', '--loop', action='store_true', help='loop forever')
     parser.add_argument('-c', '--config', default='config.json', help='set config file location')
     args = parser.parse_args()
     return args
@@ -147,9 +146,6 @@ def main():
             ui.display(screen, HOSTS, result)
         except curses.error:
             pass
-
-        if not args.loop:
-            break
 
 
 if __name__ == '__main__':

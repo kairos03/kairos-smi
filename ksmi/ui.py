@@ -38,7 +38,6 @@ def display(screen, hosts, data):
     # clear screen
     screen.clear()
 
-
     for host in hosts:
         gpu_stat = data[host].get('gpus')
         app_stat = data[host].get('apps')
@@ -63,16 +62,14 @@ def display(screen, hosts, data):
             screen.addstr("| {:2} | {:3s}C | {:>5s} | {:>3.0f} % | {:>6s} / {:9s} |\n".format(i, gpu[5], gpu[6], float(gpu[7][:-4])/float(gpu[8][:-4]) * 100, gpu[7][:-4], gpu[8]))
             
     screen.refresh()
-    if DEBUG:
-        screen.getkey()
 
 
 if __name__ == "__main__":
     DEBUG=True
-    hosts = ["mlvc08@163.180.186.51:2222", 'mlvc01@163.180.186.41:2222']
+    hosts = ["mlvc08@163.180.122.122:22", 'mlvc01@163.180.111.111:22']
     wrong_host = ["test@123.123.123.123:2211"]     
     data = {
-            'mlvc08@163.180.186.51:2222': 
+            'mlvc08@163.180.122.122:22': 
                 {
                     'apps': 
                         [['GPU-630fa4d7-2180-8cbb-04c4-694adade766b', '21515', 'python3', '2307 MiB'], 
@@ -89,7 +86,7 @@ if __name__ == "__main__":
                          ['2019/08/28 15:54:51.551', 'GPU-4369cf8c-96af-3796-1510-23ecceacd6c2', '4', 'GeForce RTX 2080 Ti', 'P2', '45', '11 %', '8745 MiB', '10989 MiB'], 
                          ['2019/08/28 15:54:51.553', 'GPU-9cc81f29-7ebe-588b-cf02-4da70e40e95a', '4', 'GeForce RTX 2080 Ti', 'P2', '46', '11 %', '8699 MiB', '10986 MiB']]
                 }, 
-            'mlvc01@163.180.186.41:2222': 
+            'mlvc01@163.180.111.111:22': 
                 {
                     'gpus': 
                         [['2019/08/28 15:54:51.467', 'GPU-fb19aca9-d0b4-4737-fde5-e1437483dc2f', '4', 'GeForce GTX 1080 Ti', 'P2', '50', '27 %', '2286 MiB', '11178 MiB'], 
@@ -103,4 +100,11 @@ if __name__ == "__main__":
                          ['GPU-2071bf07-1c43-67d0-e701-204519e7465a', '2687', 'python3', '2275 MiB']]
                 }
             }
-    display(hosts, data)
+    scr = init_screen()
+    try:
+        scr.nodelay(False)
+        display(scr, hosts, data)
+        scr.getkey() 
+        print(scr.instr())
+    finally:
+        cleanup_screen()
