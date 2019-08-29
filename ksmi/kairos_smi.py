@@ -161,4 +161,3 @@ if __name__ == '__main__':
         print(e)
     finally:
         ui.cleanup_screen()
-        # exit(0)
