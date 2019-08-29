@@ -5,6 +5,12 @@ import json
 from multiprocessing import Process, Queue
 import argparse
 import logging
+import curses
+
+try: 
+    from . import ui
+except ImportError:
+    import ui
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -40,6 +46,8 @@ def ssh_remote_command(entrypoint, command, timeout=1):
         #print(out, err)
         return {'status': 'Timeout', 'entry': entrypoint, 'command': command, 'data': postprocessing(err)}
 
+    except KeyboardInterrupt:
+        pass
 
 def get_gpus_status(hosts, timeout=1):
 
@@ -80,7 +88,7 @@ def get_gpus_status(hosts, timeout=1):
 
     return result
 
-
+@DeprecationWarning
 def display_gpu_status(hosts, data):
     """Display gpu status
     """
@@ -107,7 +115,6 @@ def display_gpu_status(hosts, data):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-l', '--loop', action='store_true', help='loop forever')
     parser.add_argument('-c', '--config', default='config.json', help='set config file location')
     args = parser.parse_args()
     return args
@@ -124,19 +131,29 @@ def main():
 
     HOSTS = conf['hosts']
 
+    # init screen
+    screen = ui.init_screen()
     while(True):
         result = get_gpus_status(HOSTS)
 
-        if args.loop:
-            os.system('cls' if os.name == 'nt' else "printf '\033c'")
+        key = screen.getch()
+        if key == ord('q'):
+            curses.endwin()
+            break
 
         logging.debug("result {}".format(result))
-        display_gpu_status(HOSTS, result)
-        
-        if not args.loop:
-            
-            break
+        try:
+            ui.display(screen, HOSTS, result)
+        except curses.error:
+            pass
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
+    except Exception as e:
+        print(e)
+    finally:
+        ui.cleanup_screen()
