@@ -40,6 +40,7 @@ class test_ssh_remote_command(unittest.TestCase):
         # success case
         result = ssh_remote_command(self.success_host, QUERY_GPU, self.timeout)
         self.assertEqual(result['status'], 'Success')
+        print(result)
         print(result['data'])
         
     def test_query_fail(self):
