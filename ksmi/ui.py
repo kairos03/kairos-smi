@@ -11,11 +11,11 @@ def column(matrix, i):
     return [row[i] for row in matrix]
 
 def init_screen():
-    # init screen
+    """init screen
+    """
     screen = curses.initscr()
     curses.newwin(50, 100)
     curses.noecho()
-    #curses.nocbreak()
     curses.curs_set(0)
     curses.start_color()
     curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
@@ -26,12 +26,15 @@ def init_screen():
     return screen
 
 def cleanup_screen():
+    """cleanup screen
+    """
     curses.echo()
-    #curses.cbreak()
     curses.curs_set(1)
     curses.endwin()
 
 def display(screen, hosts, data, show_process_detail=False, target_user=None):
+    """display gpus on screen 
+    """
     # get display size
     _, cols = screen.getmaxyx()
     # ditermin num cols
@@ -42,13 +45,14 @@ def display(screen, hosts, data, show_process_detail=False, target_user=None):
     # clear screen
     screen.clear()
 
+    # display results
     for host in hosts:
         gpu_stat = data[host].get('gpus')
         app_stat = data[host].get('apps')
         active_gpus = len(set(app_info[0] for app_info in app_stat))
         
         # print gpu stat
-        # if gpu stat is empty
+        # check error and select colors
         error = gpu_stat == None or app_stat == None or len(gpu_stat) == 0
         color = curses.color_pair(1) if error else curses.color_pair(2)
         screen.addstr('{: <27}'.format('[{:<.25}]'.format(host.split(':')[0])), color)
@@ -59,8 +63,9 @@ def display(screen, hosts, data, show_process_detail=False, target_user=None):
             screen.addstr('{: >24}'.format("Apps: {:<2}  GPUs: {:2}/{:2}\n".format(len(app_stat), active_gpus, len(gpu_stat))), color)
             screen.addstr("| No | Temp | Util% | Mem % |       Memory       |\n", curses.color_pair(3))
         
-        # print apps
+        # print app stat
         for i, gpu in enumerate(gpu_stat):
+            # gpu attribute check
             if len(gpu) != 9:
                 continue
             screen.addstr("| {:2} | {:3s}C | {:>5s} | {:>3.0f} % | {:>6s} / {:9s} |\n".format(i, gpu[5], gpu[6], float(gpu[7][:-4])/float(gpu[8][:-4]) * 100, gpu[7][:-4], gpu[8]))
@@ -74,14 +79,13 @@ def display(screen, hosts, data, show_process_detail=False, target_user=None):
                             if target_user is not None:
                                 if target_user == app[3]:
                                     screen.addstr("\t└──| {:8s} | {:8s} | {:4s} | {:4s} | {:10s} | {:15s} |\n".format(app[3], app[1], app[5], app[4], app[6], " ".join(app[7:])[:25]))
-   
                             else:
                                 screen.addstr("\t└──| {:8s} | {:8s} | {:4s} | {:4s} | {:10s} | {:15s} |\n".format(app[3], app[1], app[5], app[4], app[6], " ".join(app[7:])[:25]))
                         
             
     screen.refresh()
 
-
+# TODO refactoring test code
 if __name__ == "__main__":
     DEBUG=True
     hosts = ["mlvc08@163.180.122.122:22", 'mlvc01@163.180.111.111:22']
