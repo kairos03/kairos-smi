@@ -33,9 +33,10 @@ def ssh_remote_command(entrypoint, command, timeout=1):
                        shell=False,
                        stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
+    print(type(ssh))
     try:
         out, err = ssh.communicate(timeout=timeout)
-        #print(out, err)
+        print(out, err)
         if err != b'':
             return {'status': 'Error', 'entry': entrypoint, 'command': command, 'data': postprocessing(err)}
         return {'status': 'Success', 'entry': entrypoint, 'command': command, 'data': postprocessing(out)}
