@@ -31,7 +31,7 @@ def cleanup_screen():
     curses.curs_set(1)
     curses.endwin()
 
-def display(screen, hosts, data, show_process_detail=False):
+def display(screen, hosts, data, show_process_detail=False, target_user=None):
     # get display size
     _, cols = screen.getmaxyx()
     # ditermin num cols
@@ -67,10 +67,15 @@ def display(screen, hosts, data, show_process_detail=False):
             if show_process_detail:
                 if gpu[1] in column(app_stat, 0):
                     
-                    screen.addstr("\t└──| Username | GPU Mem% | Mem% | CPU% |    Etime   |        Command        |\n", curses.color_pair(4))
+                    screen.addstr("\t└──| Username | GPU Mem% | Mem% | CPU% |    Etime   |          Command          |\n", curses.color_pair(4))
                     for j, app in enumerate(app_stat):
                         if gpu[1] == app[0]:
-                            screen.addstr("\t└──| {:8s} | {:8s} | {:4s} | {:4s} | {:10s} | {:15s} |\n".format(app[3], app[1], app[5], app[4], app[6], " ".join(app[7:])[:21]))
+                            if target_user is not None:
+                                if target_user == app[3]:
+                                    screen.addstr("\t└──| {:8s} | {:8s} | {:4s} | {:4s} | {:10s} | {:15s} |\n".format(app[3], app[1], app[5], app[4], app[6], " ".join(app[7:])[:25]))
+   
+                            else:
+                                screen.addstr("\t└──| {:8s} | {:8s} | {:4s} | {:4s} | {:10s} | {:15s} |\n".format(app[3], app[1], app[5], app[4], app[6], " ".join(app[7:])[:25]))
                         
             
     screen.refresh()

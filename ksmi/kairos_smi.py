@@ -127,6 +127,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config', default='config.json', help='set config file location')
     parser.add_argument('-p', '--process', action='store_true', help='show process details (e.g. username, used_memory, cpu util, execution time, command)')
+    parser.add_argument('-u', '--user', default=None, help='find all the processes with username')
     args = parser.parse_args()
     return args
 
@@ -155,7 +156,7 @@ def main():
         logging.debug("result {}".format(result))
 
         try:
-            ui.display(screen, HOSTS, result, args.process)
+            ui.display(screen, HOSTS, result, args.process, args.user)
         except curses.error:
             pass
 
