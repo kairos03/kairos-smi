@@ -7,6 +7,9 @@ import curses
 MIN_COL_LEN=100
 DEBUG=False
 
+def column(matrix, i):
+    return [row[i] for row in matrix]
+
 def init_screen():
     # init screen
     screen = curses.initscr()
@@ -18,6 +21,7 @@ def init_screen():
     curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
     curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
     curses.init_pair(3, curses.COLOR_BLUE, curses.COLOR_BLACK)
+    curses.init_pair(4, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
     screen.nodelay(True)
     return screen
 
@@ -27,7 +31,7 @@ def cleanup_screen():
     curses.curs_set(1)
     curses.endwin()
 
-def display(screen, hosts, data):
+def display(screen, hosts, data, show_process_detail=False, target_user=None):
     # get display size
     _, cols = screen.getmaxyx()
     # ditermin num cols
@@ -60,6 +64,19 @@ def display(screen, hosts, data):
             if len(gpu) != 9:
                 continue
             screen.addstr("| {:2} | {:3s}C | {:>5s} | {:>3.0f} % | {:>6s} / {:9s} |\n".format(i, gpu[5], gpu[6], float(gpu[7][:-4])/float(gpu[8][:-4]) * 100, gpu[7][:-4], gpu[8]))
+            if show_process_detail:
+                if gpu[1] in column(app_stat, 0):
+                    
+                    screen.addstr("\t└──| Username | GPU Mem% | Mem% | CPU% |    Etime   |          Command          |\n", curses.color_pair(4))
+                    for j, app in enumerate(app_stat):
+                        if gpu[1] == app[0]:
+                            if target_user is not None:
+                                if target_user == app[3]:
+                                    screen.addstr("\t└──| {:8s} | {:8s} | {:4s} | {:4s} | {:10s} | {:15s} |\n".format(app[3], app[1], app[5], app[4], app[6], " ".join(app[7:])[:25]))
+   
+                            else:
+                                screen.addstr("\t└──| {:8s} | {:8s} | {:4s} | {:4s} | {:10s} | {:15s} |\n".format(app[3], app[1], app[5], app[4], app[6], " ".join(app[7:])[:25]))
+                        
             
     screen.refresh()
 
