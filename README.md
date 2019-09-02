@@ -11,7 +11,7 @@ See change Log: [change log](change_logs/v0.1.3.1.md)
 ![sample.png](img/v0.2.2a2.png)
 
 ```
-usage: ksmi [-h] [-l] [-c CONFIG]
+usage: kairos_smi.py [-h] [-p] [-u USERNAME] [-c CONFIG] 
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -50,12 +50,12 @@ $ python3 -m ksmi.copy_id -c config.json -n
 
 ## 4. Run It!
 ```shell
-$ python3 -m ksmi -c config.json -l
+$ python3 -m ksmi -p -c config.json
 ```
 
 # kairos-smi
 ```
-usage: kairos_smi.py [-h] [-l] [-c CONFIG]
+usage: kairos_smi.py [-h] [-p] [-u USERNAME] [-c CONFIG] 
 
 optional arguments:
   -h, --help            show this help message and exit
