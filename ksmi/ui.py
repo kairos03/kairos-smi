@@ -69,8 +69,10 @@ def display(screen, hosts, data, show_process_detail=False, target_user=None):
             if len(gpu) != 9:
                 continue
             screen.addstr("| {:2} | {:3s}C | {:>5s} | {:>3.0f} % | {:>6s} / {:9s} |\n".format(i, gpu[5], gpu[6], float(gpu[7][:-4])/float(gpu[8][:-4]) * 100, gpu[7][:-4], gpu[8]))
-            if show_process_detail:
+            if show_process_detail or target_user is not None:
                 if gpu[1] in column(app_stat, 0):
+                    if target_user is not None and target_user not in column(app_stat, 3):
+                        continue
                     screen.addstr("\t└──| Username | GPU Mem% | Mem% | CPU% |    Etime   |          Command          |\n", curses.color_pair(4))
                     for j, app in enumerate(app_stat):
                         if gpu[1] == app[0]:
