@@ -8,7 +8,7 @@ Multi-server gpu monitoring program
 
 See change Log: [change log](change_logs/v0.1.3.1.md)
 
-![sample.png](img/v0.2.2a1.png)
+![sample.png](img/v0.2.2a2.png)
 
 ```
 usage: ksmi [-h] [-l] [-c CONFIG]
