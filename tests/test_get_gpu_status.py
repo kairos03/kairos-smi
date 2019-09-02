@@ -1,6 +1,10 @@
 import unittest
+from unittest.mock import patch
 
 from ksmi.kairos_smi import get_gpus_status
+from ksmi.kairos_smi import QUERY_GPU
+from ksmi.kairos_smi import QUERY_APP
+
 
 class test_get_gpu_status(unittest.TestCase):
     
@@ -9,6 +13,13 @@ class test_get_gpu_status(unittest.TestCase):
         self.error_hosts = ["error@123.123.123.123:2211"]
         self.timeout = 10
         self.success_return = {
+            'status': 'Success', 
+            'entry': 'success@111.111.111.111:22', 
+            'command': 'nvidia-smi --query-gpu=timestamp,gpu_uuid,count,name,pstate,temperature.gpu,utilization.gpu,memory.used,memory.total --format=csv,noheader', 
+            'data': [['2019/08/30 12:04:44.462', 'GPU-e831358e-b0e6-38c1-eea8-4f08d58ebe5d', '7', 'GeForce RTX 2080 Ti', 'P2', '70', '81 %', '10256 MiB', '10989 MiB'], 
+                    ['2019/08/30 12:04:44.472', 'GPU-25ca9c48-5004-6d7a-57ba-f8fce126957c', '7', 'GeForce RTX 2080 Ti', 'P8', '29', '0 %', '11 MiB', '10989 MiB']]
+        }
+        self.success_return1 = {
             "success@111.111.111.111:22":{
                 "gpus":[['2019/08/30 18:36:43.366', 'GPU-744c553a-2cfe-636a-9a49-ef88a4de14f4', '4', 'GeForce GTX 1080 Ti', 'P8', '29', '0 %', '1 MiB', '11178 MiB'], 
                         ['2019/08/30 18:36:43.370', 'GPU-3c7715ab-2204-60a3-bf01-accb2360644f', '4', 'GeForce GTX 1080 Ti', 'P2', '62', '100 %', '4347 MiB', '11178 MiB'], 
@@ -20,8 +31,29 @@ class test_get_gpu_status(unittest.TestCase):
                         ['GPU-94405968-473a-6e5f-4002-ba9e6243091d', '2135', '25653', 'mlvcgpu', '99.3', '4.2', '02:49:49', 'python3', 'train_CIFAR10.py', '-act', 'PRELU4', '-error', '0.09', '-net', 'resnet']]
             }
         }
+    
+    def _mock_ssh(self, host, command, timeout=1):
+        ret_val = {
+            'status': None,
+            'entry': host,
+            'command': command,
+            'data': []
+        }
+        if host == self.success_hosts[0]:
+            ret_val['status'] = 'Success'
+            if command == QUERY_GPU:
+                ret_val['data'] = [['2019/08/30 12:04:44.462', 'GPU-e831358e-b0e6-38c1-eea8-4f08d58ebe5d', '7', 'GeForce RTX 2080 Ti', 'P2', '70', '81 %', '10256 MiB', '10989 MiB'], 
+                ['2019/08/30 12:04:44.472', 'GPU-25ca9c48-5004-6d7a-57ba-f8fce126957c', '7', 'GeForce RTX 2080 Ti', 'P8', '29', '0 %', '11 MiB', '10989 MiB']]
+            elif command == QUERY_APP:
+                ret_val['data'] = [['GPU-94405968-473a-6e5f-4002-ba9e6243091d', '2135', '25653', 'mlvcgpu', '99.3', '4.2', '03:27:09', 'python3', 'train_CIFAR10.py', '-act', 'PRELU4', '-error', '0.09', '-net', 'resnet'],
+                ['GPU-94405968-473a-6e5f-4002-ba9e6243091d', '2135', '25653', 'mlvcgpu', '99.3', '4.2', '03:27:09', 'python3', 'train_CIFAR10.py', '-act', 'PRELU4', '-error', '0.09', '-net', 'resnet']] 
+        else:
+            ret_val['status'] = 'Error'
+        return ret_val
 
-    def test_get_gpu_status_success(self):
+    @patch('ksmi.kairos_smi.ssh_remote_command')
+    def test_get_gpu_status_success(self, mock_ssh):
+        mock_ssh.side_effect = self._mock_ssh
         # success case
         results = get_gpus_status(self.success_hosts, self.timeout)
         print(results)
@@ -37,7 +69,9 @@ class test_get_gpu_status(unittest.TestCase):
             self.assertTrue(len(results[entry]['apps']) != 0)
             # print(results[entry]['apps'])
 
-    def test_get_gpu_status_fail(self):
+    @patch('ksmi.kairos_smi.ssh_remote_command')
+    def test_get_gpu_status_fail(self, mock_ssh):
+        mock_ssh.side_effect = self._mock_ssh
         # fail case
         results = get_gpus_status(self.error_hosts, self.timeout)
         self.assertEqual(type(results), type({}))
