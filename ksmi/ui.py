@@ -49,17 +49,18 @@ def display(screen, hosts, data, show_process_detail=False, target_user=None):
     for host in hosts:
         gpu_stat = data[host].get('gpus')
         app_stat = data[host].get('apps')
-        active_gpus = len(set(app_info[0] for app_info in app_stat))
         
         # print gpu stat
         # check error and select colors
         error = gpu_stat == None or app_stat == None or len(gpu_stat) == 0
         color = curses.color_pair(1) if error else curses.color_pair(2)
+
         screen.addstr('{: <27}'.format('[{:<.25}]'.format(host.split(':')[0])), color)
         if error:
             screen.addstr('{: >24}'.format('| ERROR |\n'), color)
             continue
         else:
+            active_gpus = len(set(app_info[0] for app_info in app_stat))
             screen.addstr('{: >24}'.format("Apps: {:<2}  GPUs: {:2}/{:2}\n".format(len(app_stat), active_gpus, len(gpu_stat))), color)
             screen.addstr("| No | Temp | Util% | Mem % |       Memory       |\n", curses.color_pair(3))
         
