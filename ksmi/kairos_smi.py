@@ -128,6 +128,7 @@ def get_args():
     parser.add_argument('-c', '--config', default='config.json', help='set config file location')
     parser.add_argument('-p', '--process', action='store_true', help='show process details (e.g. username, used_memory, cpu util, execution time, command)')
     parser.add_argument('-u', '--user', default=None, help='find all the processes with username')
+    parser.add_argument('-t', '--timeout', default=2, help='set timeout')
     args = parser.parse_args()
     return args
 
@@ -146,7 +147,7 @@ def main():
     # init screen
     screen = ui.init_screen()
     while(True):
-        result = get_gpus_status(HOSTS, timeout=2)
+        result = get_gpus_status(HOSTS, timeout=args.timeout)
 
         key = screen.getch()
         if key == ord('q'):
