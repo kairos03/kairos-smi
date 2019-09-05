@@ -6,28 +6,28 @@ from multiprocessing import Process, Queue
 import argparse
 import logging
 import curses
+import traceback
 
 try: 
     from . import ui
 except ImportError:
     import ui
 
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(filename='ksmi.log', format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
 
 # querys
-QUERY_GPU = "nvidia-smi --query-gpu=timestamp,gpu_uuid,count,name,pstate,temperature.gpu,utilization.gpu,memory.used,memory.total --format=csv,noheader"
+QUERY_GPU = "nvidia-smi --query-gpu=timestamp,gpu_uuid,count,name,pstate,temperature.gpu,utilization.gpu,memory.used,memory.total --format=csv,noheader,nounits"
+#QUERY_APP = "nvidia-smi --query-compute-apps=gpu_uuid,pid,process_name,used_memory --format=csv,noheader"
 QUERY_APP = """
         a=($(nvidia-smi --query-compute-apps=gpu_uuid,pid,used_memory --format=csv,noheader,nounits | awk '{print $1,$2,$3}' FS=', ' OFS=','))
         for item in $a
         do
-            pid=$(echo $item | awk '{print $2}' FS=',') 
-            ps=$(ps --noheader -o "pid,user,%cpu,%mem,etime,command" -p $pid)
+            ps=$(ps --noheader -o "pid,user,%cpu,%mem,etime,command" -p $(echo $item | awk '{print $2}' FS=',') )
             echo $item | awk '{printf "%s, %s, ", $1, $3}' FS="," RS="\n" 
             echo $ps | awk 'BEGIN {OFS=", "} {$1=$1; print}' RS="\n"
         done;
         """
 
-#QUERY_APP = "nvidia-smi --query-compute-apps=gpu_uuid,pid,process_name,used_memory --format=csv,noheader"
 
 def ssh_remote_command(entrypoint, command, timeout=1):
 
@@ -43,9 +43,10 @@ def ssh_remote_command(entrypoint, command, timeout=1):
                        shell=False,
                        stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
+    logging.debug("ssh popen %s"% entrypoint)
     try:
         out, err = ssh.communicate(timeout=timeout)
-        #print(out, err)
+        logging.debug((out, err))
         if err != b'':
             return {'status': 'Error', 'entry': entrypoint, 'command': command, 'data': postprocessing(err)}
         return {'status': 'Success', 'entry': entrypoint, 'command': command, 'data': postprocessing(out)}
@@ -53,11 +54,15 @@ def ssh_remote_command(entrypoint, command, timeout=1):
     except subprocess.TimeoutExpired:
         ssh.kill()
         out, err = ssh.communicate()
-        #print(out, err)
+        logging.debug((out, err))
         return {'status': 'Timeout', 'entry': entrypoint, 'command': command, 'data': postprocessing(err)}
 
     except KeyboardInterrupt:
         pass
+
+    finally:
+        if ssh.poll():
+            ssh.terminate()
 
 def get_gpus_status(hosts, timeout=1):
 
@@ -125,10 +130,10 @@ def display_gpu_status(hosts, data):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--config', default='config.json', help='set config file location')
+    parser.add_argument('-c', '--config', type=str, default='config.json', help='set config file location')
     parser.add_argument('-p', '--process', action='store_true', help='show process details (e.g. username, used_memory, cpu util, execution time, command)')
-    parser.add_argument('-u', '--user', default=None, help='find all the processes with username')
-    parser.add_argument('-t', '--timeout', default=2, help='set timeout')
+    parser.add_argument('-u', '--user', type=str, default=None, help='find all the processes with username')
+    parser.add_argument('-t', '--timeout', type=int, default=2, help='set timeout')
     args = parser.parse_args()
     return args
 
@@ -143,23 +148,17 @@ def main():
         exit()
 
     HOSTS = conf['hosts']
+    logging.debug('HOSTS: %s' % HOSTS)
 
     # init screen
     screen = ui.init_screen()
+    logging.debug("ui init")
     while(True):
         result = get_gpus_status(HOSTS, timeout=args.timeout)
 
-        key = screen.getch()
-        if key == ord('q'):
-            curses.endwin()
-            break
-
         logging.debug("result {}".format(result))
 
-        try:
-            ui.display(screen, HOSTS, result, args.process, args.user)
-        except curses.error:
-            pass
+        ui.display(screen, HOSTS, result, args.process, args.user)
 
 
 if __name__ == '__main__':
@@ -167,7 +166,7 @@ if __name__ == '__main__':
         main()
     except KeyboardInterrupt:
         pass
-    except Exception as e:
-        print(e)
+    # except Exception as e:
+    #     print(e)
     finally:
         ui.cleanup_screen()

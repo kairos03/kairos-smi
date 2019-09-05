@@ -2,7 +2,10 @@
 ksmi Terminal UI module
 """
 import curses
+import logging
+import traceback
 
+logging.basicConfig(filename='ksmi.log', format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
 
 MIN_COL_LEN=100
 DEBUG=False
@@ -14,14 +17,15 @@ def init_screen():
     """init screen
     """
     screen = curses.initscr()
-    curses.newwin(50, 100)
+    #curses.newwin(curses.LINES-1, curses.COLS-1)
     curses.noecho()
     curses.curs_set(0)
     curses.start_color()
-    curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
-    curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
-    curses.init_pair(3, curses.COLOR_BLUE, curses.COLOR_BLACK)
-    curses.init_pair(4, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+    curses.init_pair(1, curses.COLOR_RED,       curses.COLOR_BLACK) # error
+    curses.init_pair(2, curses.COLOR_YELLOW,    curses.COLOR_BLACK) # warning
+    curses.init_pair(3, curses.COLOR_GREEN,     curses.COLOR_BLACK) # success
+    curses.init_pair(4, curses.COLOR_BLUE,      curses.COLOR_BLACK) # index row
+    curses.init_pair(5, curses.COLOR_MAGENTA,   curses.COLOR_BLACK) # process row
     screen.nodelay(True)
     return screen
 
@@ -35,56 +39,72 @@ def cleanup_screen():
 def display(screen, hosts, data, show_process_detail=False, target_user=None):
     """display gpus on screen 
     """
-    # get display size
-    _, cols = screen.getmaxyx()
-    # ditermin num cols
-    num_col = 1
-    if cols >= MIN_COL_LEN * 2: 
-        num_col = 2
+    try:
+        # clear screen
+        screen.clear()
 
-    # clear screen
-    screen.clear()
+        # display results
+        for host in hosts:
+            gpu_stat = data[host].get('gpus')
+            app_stat = data[host].get('apps')
+            # print gpu stat
+            # check error and select colors
+            error = gpu_stat == None or app_stat == None or len(gpu_stat) == 0
+            color = curses.color_pair(1) if error else curses.color_pair(3)
 
-    # display results
-    for host in hosts:
-        gpu_stat = data[host].get('gpus')
-        app_stat = data[host].get('apps')
-        
-        # print gpu stat
-        # check error and select colors
-        error = gpu_stat == None or app_stat == None or len(gpu_stat) == 0
-        color = curses.color_pair(1) if error else curses.color_pair(2)
-
-        screen.addstr('{: <27}'.format('[{:<.25}]'.format(host.split(':')[0])), color)
-        if error:
-            screen.addstr('{: >24}'.format('| ERROR |\n'), color)
-            continue
-        else:
-            active_gpus = len(set(app_info[0] for app_info in app_stat))
-            screen.addstr('{: >24}'.format("Apps: {:<2}  GPUs: {:2}/{:2}\n".format(len(app_stat), active_gpus, len(gpu_stat))), color)
-            screen.addstr("| No | Temp | Util% | Mem % |       Memory       |\n", curses.color_pair(3))
-        
-        # print app stat
-        for i, gpu in enumerate(gpu_stat):
-            # gpu attribute check
-            if len(gpu) != 9:
+            screen.addstr('{: <27}'.format('[{:<.25}]'.format(host.split(':')[0])), color | curses.A_BOLD)
+            if error:
+                screen.addstr('{: >24}'.format('| ERROR |\n'), color | curses.A_BOLD)
                 continue
-            screen.addstr("| {:2} | {:3s}C | {:>5s} | {:>3.0f} % | {:>6s} / {:9s} |\n".format(i, gpu[5], gpu[6], float(gpu[7][:-4])/float(gpu[8][:-4]) * 100, gpu[7][:-4], gpu[8]))
-            if show_process_detail or target_user is not None:
-                if gpu[1] in column(app_stat, 0):
-                    if target_user is not None and target_user not in column(app_stat, 3):
-                        continue
-                    screen.addstr("\t└──| Username | GPU Mem% | Mem% | CPU% |    Etime   |          Command          |\n", curses.color_pair(4))
-                    for j, app in enumerate(app_stat):
-                        if gpu[1] == app[0]:
-                            if target_user is not None:
-                                if target_user == app[3]:
-                                    screen.addstr("\t└──| {:8s} | {:8s} | {:4s} | {:4s} | {:10s} | {:15s} |\n".format(app[3], app[1], app[5], app[4], app[6], " ".join(app[7:])[:25]))
-                            else:
-                                screen.addstr("\t└──| {:8s} | {:8s} | {:4s} | {:4s} | {:10s} | {:15s} |\n".format(app[3], app[1], app[5], app[4], app[6], " ".join(app[7:])[:25]))
-                        
+            else:
+                active_gpus = len(set(app_info[0] for app_info in app_stat))
+                screen.addstr('{: >24}'.format("Apps: {:<2}  GPUs: {:2}/{:2}\n".format(len(app_stat), active_gpus, len(gpu_stat))), color | curses.A_BOLD)
+                screen.addstr("| No | Temp | Util% | Mem % |       Memory       |\n", curses.color_pair(4))
             
-    screen.refresh()
+            # print app stat
+            for i, gpu in enumerate(gpu_stat):
+                # gpu attribute check
+                if len(gpu) != 9:
+                    continue
+                # mem% color 
+                logging.debug(gpu[7])
+                logging.debug(gpu[8])
+                mem_per = float(gpu[7])/float(gpu[8]) * 100
+                util_per = int(gpu[6])
+                color = curses.color_pair(0)
+                if mem_per >= 70 or util_per >= 70:
+                    color = curses.color_pair(1)
+                elif mem_per >= 40 or util_per >= 40:
+                    color = curses.color_pair(2)
+
+                logging.info("print gpu stat")
+                logging.debug("color: %s" % color)
+                gpu_stat = "| {:2} | {:3s}C | {:>5s} | {:>3.0f} % | {:>6s} / {:9s} |\n".format(i, gpu[5], gpu[6], mem_per, gpu[7], gpu[8])
+                if gpu_stat == '':
+                    print(gpu_stat)
+                    continue
+                logging.debug(gpu_stat)
+                screen.addstr(gpu_stat, color)
+                
+                if show_process_detail or target_user is not None:
+                    if gpu[1] in column(app_stat, 0):
+                        if target_user is not None and target_user not in column(app_stat, 3):
+                            continue
+                        screen.addstr("└──| Username | GPU Mem% | Mem% | CPU% |    Etime   |          Command          |\n", curses.color_pair(5))
+                        for app in app_stat:
+                            if gpu[1] == app[0]:
+                                if target_user is not None:
+                                    if target_user == app[3]:
+                                        process_stat = "└──| {:8s} | {:8s} | {:4s} | {:4s} | {:10s} | {:15s} |\n".format(app[3], app[1], app[5], app[4], app[6], " ".join(app[7:])[:25])
+                                        logging.debug(process_stat)
+                                        screen.addstr(process_stat)
+                                else:
+                                    screen.addstr("└──| {:8s} | {:8s} | {:4s} | {:4s} | {:10s} | {:15s} |\n".format(app[3], app[1], app[5], app[4], app[6], " ".join(app[7:])[:25]))
+
+        screen.refresh()
+    except curses.error:
+        logging.exception("curses.error")
+        raise
 
 # TODO refactoring test code
 if __name__ == "__main__":
