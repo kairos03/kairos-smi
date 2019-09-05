@@ -13,7 +13,7 @@ try:
 except ImportError:
     import ui
 
-logging.basicConfig(filename='ksmi.log', format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
+logging.basicConfig(filename='ksmi.log', filemode='w', format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
 
 # querys
 QUERY_GPU = "nvidia-smi --query-gpu=timestamp,gpu_uuid,count,name,pstate,temperature.gpu,utilization.gpu,memory.used,memory.total --format=csv,noheader,nounits"

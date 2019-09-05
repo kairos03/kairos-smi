@@ -5,8 +5,6 @@ import curses
 import logging
 import traceback
 
-logging.basicConfig(filename='ksmi.log', format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
-
 MIN_COL_LEN=100
 DEBUG=False
 
@@ -58,7 +56,7 @@ def display(screen, hosts, data, show_process_detail=False, target_user=None):
                 continue
             else:
                 active_gpus = len(set(app_info[0] for app_info in app_stat))
-                screen.addstr('{: >24}'.format("Apps: {:<2}  GPUs: {:2}/{:2}\n".format(len(app_stat), active_gpus, len(gpu_stat))), color | curses.A_BOLD)
+                screen.addstr('{: >24}'.format("Procs: {:<2}  GPUs: {:2}/{:2}\n".format(len(app_stat), active_gpus, len(gpu_stat))), color | curses.A_BOLD)
                 screen.addstr("| No | Temp | Util% | Mem % |       Memory       |\n", curses.color_pair(4))
             
             # print app stat
@@ -79,7 +77,7 @@ def display(screen, hosts, data, show_process_detail=False, target_user=None):
 
                 logging.info("print gpu stat")
                 logging.debug("color: %s" % color)
-                gpu_stat = "| {:2} | {:3s}C | {:>5s} | {:>3.0f} % | {:>6s} / {:9s} |\n".format(i, gpu[5], gpu[6], mem_per, gpu[7], gpu[8])
+                gpu_stat = "| {:2} | {:3s}C | {:>3s} % | {:>3.0f} % | {:>6s} / {:5s} MiB |\n".format(i, gpu[5], gpu[6], mem_per, gpu[7], gpu[8])
                 if gpu_stat == '':
                     print(gpu_stat)
                     continue
